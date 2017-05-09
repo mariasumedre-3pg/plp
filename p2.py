@@ -7,9 +7,11 @@ import unittest
 def merge_values(value1, value2):
     ''' Utility function to add(merge) two values
         The values could be lists, numbers, strings, sets
-        Next: dictionaries, maybe add recursion '''
+        '''
     result = None
     try:
+        # all cases that we know how to merge/add are here,
+        # if we don't know how to merge/add, then exception handler makes a tuple
         if isinstance(value1, set) and isinstance(value2, set):
             result = value1.union(value2)
         elif isinstance(value1, dict) and isinstance(value2, dict):
@@ -24,18 +26,23 @@ def merge_values(value1, value2):
 
 def my_merger(dict_a, dict_b):
     ''' merge two lists which have elements of different types
-        first really simple implementation, need to make this recursive(?)
-        because the add is shallow
+        this will check if arguments are dictionaries,
+        then call merge_values for each value, if the keys match
+        remains to be seen what should happen if the keys do not match
         '''
     result = {}
     if isinstance(dict_a, dict) and isinstance(dict_b, dict):
         #keysa = sorted(dict_a.keys())
         #keysb = sorted(dict_b.keys())
-        for key in dict_a.keys():
-            if key in dict_b.keys():
-                result[key] = merge_values(dict_a[key], dict_b[key])
-            else: # but what if is in dict_b and not in dict_a?
-                print "key: ", key, " is in dict_a, but not in dict_b"
+        #for key in dict_a.keys():
+        #    if key in dict_b.keys():
+        #        result[key] = merge_values(dict_a[key], dict_b[key])
+        #    else: # but what if is in dict_b and not in dict_a?
+        #        print "key: ", key, " is in dict_a, but not in dict_b"
+        # equivalent of above(?), but exercising the python one-liners
+        keysa = dict_a.keys()
+        keysb = dict_b.keys()
+        result = {key : merge_values(dict_a[key], dict_b[key]) for key in keysa if key in keysb}
     return result
 
 
