@@ -42,7 +42,9 @@ def my_merger(dict_a, dict_b):
         # equivalent of above(?), but exercising the python one-liners
         keysa = dict_a.keys()
         keysb = dict_b.keys()
-        result = {key : merge_values(dict_a[key], dict_b[key]) for key in keysa if key in keysb}
+        result = {key : merge_values(dict_a[key], dict_b[key])
+                  for key in keysa
+                  if key in keysb}
     return result
 
 
@@ -100,8 +102,23 @@ class MergerTest(unittest.TestCase):
         self.assertDictEqual(my_merger(arg1, arg2), exp, "2 simple dicts with dicts")
 
     def test_mixdictionary(self):
-        arg1 = {'x': [1,2,3], 'y': 1, 'z': set([1,2,3]), 'w': 'qweqwe', 't': {'a': [1, 2]}, 'm': [1]}
-        arg2 = {'x': [4,5,6], 'y': 4, 'z': set([4,2,3]), 'w': 'asdf', 't': {'a': [3, 2]}, 'm': "wer"}
-        exp = {'x': [1,2,3,4,5,6], 'y': 5, 'z': set([1,2,3,4]), 'w': 'qweqweasdf', 't': {'a': [1, 2, 3, 2]}, 'm': ([1], "wer")}
-        self.assertDictEqual(my_merger(arg1, arg2), exp, "dictionaries from p2")
-
+        ''' test merge of two dictionaries containing a mix of elements '''
+        arg1 = {'x': [1, 2, 3],
+                'y': 1,
+                'z': set([1, 2, 3]),
+                'w': 'qweqwe',
+                't': {'a': [1, 2]},
+                'm': [1]}
+        arg2 = {'x': [4, 5, 6],
+                'y': 4,
+                'z': set([4, 2, 3]),
+                'w': 'asdf',
+                't': {'a': [3, 2]},
+                'm': "wer"}
+        exp = {'x': [1, 2, 3, 4, 5, 6],
+               'y': 5,
+               'z': set([1, 2, 3, 4]),
+               'w': 'qweqweasdf',
+               't': {'a': [1, 2, 3, 2]},
+               'm': ([1], "wer")}
+        self.assertDictEqual(my_merger(arg1, arg2), exp, "dictionaries from p2 example")
