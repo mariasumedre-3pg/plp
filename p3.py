@@ -145,9 +145,11 @@ def dict_key_less_than(dictionary):
     result = ""
     for key in keys:
         result += dictionary[key]
-    # this doesn't work :(
-    #result = reduce((lambda key1, key2: str(dictionary[key1]) + str(dictionary[key2])),
-    #               keys)
+    # this does work, but is it worth it?
+    #result = reduce((lambda key1, key2:
+    #                 (str(dictionary[key1]) if key1 in dictionary else key1) +
+    #                 (str(dictionary[key2]) if key2 in dictionary else key2)),
+    #                keys)
     return result
 
 def dict_less_than(dict_a, dict_b):
