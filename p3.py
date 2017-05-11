@@ -143,13 +143,10 @@ def dict_key_less_than(dictionary):
         it adds the keys and the values together in a string '''
     keys = sorted(dictionary.keys())
     result = ""
-    for key in keys:
-        result += dictionary[key]
-    # this does work, but is it worth it?
-    #result = reduce((lambda key1, key2:
-    #                 (str(dictionary[key1]) if key1 in dictionary else key1) +
-    #                 (str(dictionary[key2]) if key2 in dictionary else key2)),
-    #                keys)
+    #for key in keys:
+    #    result += dictionary[key]
+    # no reduce for strings, they should be joined
+    result = "".join(dictionary[key] for key in keys)
     return result
 
 def dict_less_than(dict_a, dict_b):
@@ -272,7 +269,7 @@ def test_dict_sort():
     assert result == DATA_STRINGS_SORTED
 
 def test_dict_sort_key():
-    """ test dict_sort which is used in the second sorting method """
+    """ test dict_sort_with_key which is used in the third sorting method """
     # build the list of dictionaries
     exp_dict_list = [DATA_STRINGS_SORTED[2], DATA_STRINGS_SORTED[1], DATA_STRINGS_SORTED[0]]
     dict_list = build_dict_list(DATA_STRINGS)
@@ -282,7 +279,7 @@ def test_dict_sort_key():
     assert result == DATA_STRINGS_SORTED
 
 def test_dict_sort_key_int():
-    """ test dict_sort which is used in the second sorting method """
+    """ test dict_sort_with_key which is used in the third sorting method """
     # build the list of dictionaries
     exp_dict_list = [DATA_INT_SORTED[1], DATA_INT_SORTED[2], DATA_INT_SORTED[0]]
     dict_list = build_dict_list(DATA_INT)
