@@ -2,8 +2,7 @@
 
 def help_check_element(element):
     """ helper function for swap_dictionary to check if an element can be used
-        as key to a dictionary
-        element should be a tuple"""
+        as key to a dictionary """
     result = True
     # by trial i found out that lists, dictionaries and sets cannot be dictionary keys
     if isinstance(element, (list, dict, set)):
