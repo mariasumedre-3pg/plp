@@ -146,7 +146,7 @@ def dict_key_less_than(dictionary):
     #for key in keys:
     #    result += dictionary[key]
     # no reduce for strings, they should be joined
-    result = "".join(dictionary[key] for key in keys)
+    result = tuple(dictionary[key] for key in keys)
     return result
 
 def dict_less_than(dict_a, dict_b):
@@ -261,7 +261,8 @@ def test_mysort2():
 def test_dict_sort():
     """ test dict_sort which is used in the second sorting method """
     # build the list of dictionaries
-    exp_dict_list = [DATA_STRINGS_SORTED[2], DATA_STRINGS_SORTED[1], DATA_STRINGS_SORTED[0]]
+    # exp_dict_list = [DATA_STRINGS_SORTED[2], DATA_STRINGS_SORTED[1], DATA_STRINGS_SORTED[0]]
+    exp_dict_list = DATA_STRINGS_SORTED[::-1]  # list slieces are nice
     dict_list = build_dict_list(DATA_STRINGS)
     assert dict_list == exp_dict_list
     # check the sorting

@@ -1,6 +1,6 @@
 """ Python script to implement P2 of Phase 2 of Python Learning Program
     This is the Poker game with classes and stuff """
-
+from __future__ import unicode_literals
 from random import shuffle
 
 COLORS = ["heart",
@@ -8,13 +8,25 @@ COLORS = ["heart",
           "club",
           "star"]
 
+class Suite(object):
+    """ enum like thing for the suites in a  deck """
+    HEARTS = 'Heart'
+    SPADE = 'Spade'
+    CLUB = 'Club'
+    DIAMOND = 'Diamond'
+    # HEARTS = '\N{Black Heart Suit}'
+    # SPADE = '\N{Black Spade Suit}'
+    # CLUB = '\N{Black Club Suit}'
+    # DIAMOND = '\N{Black Diamond Suit}'
+
 class Card(object):
-    """ Card class models a card from the 52 card deck (used for e.g. in Poker) """
-    def __init__(self, value=10, color=COLORS[0]):
+    """ Card class models a card from the 52 card deck (used for e.g. in Poker)
+        Each card has a color (or shape) and a value - a number """
+    def __init__(self, value=10, color=None):
         """ constructor for the Card class
             expects a value for the Card and a type/color """
         self._value = value
-        self._color = color
+        self._color = color or Suite.HEARTS
 
     def color(self):
         """ getter for the color/shape/type of the card """
@@ -26,6 +38,13 @@ class Card(object):
 
     def __repr__(self):
         """ override representation as this is used in displaying players' cards """
+        return "Card(value={value}, color='{color}')".format(
+            value=self._value,
+            color=self._color
+        )
+
+    def __str__(self):
+        """ value gets printed as is, but over 10 we have ace, jack, queen, king """
         number = str(self._value)
         if self._value == 10:
             number = "ace"
@@ -49,6 +68,7 @@ class Card(object):
             return result
         return NotImplemented
 
+
 class Deck(object):
     """ Deck class models the 52 card deck (used for e.g. in Blackjack) """
     def __init__(self, full=True):
@@ -58,6 +78,9 @@ class Deck(object):
         if full:
             self.collect_cards()
             self.shuffle()
+
+    def __iter__(self):
+        return iter(self._cards)
 
     def shuffle(self):
         """ shuffle the cards, if any """
@@ -77,23 +100,21 @@ class Deck(object):
         """ re-stock the deck to the full 52 cards """
         self._cards = [Card(value, color) for color in COLORS for value in range(1, 14)]
 
+    def __repr__(self):
+        return repr(self._cards)
+
     def print_cards(self):
         """ print/show cards in deck """
         for card in self._cards:
             print card
 
 
-def sort_key(card):
-    """ key to give to sorted to sort the Poker Cards """
-    return str(card)
-
-
 class PokerPlayer(object):
     """ PokerPlayer class models the Poker players, who expect cards from PokerDealer """
-    def __init__(self, name="Ion Popescu"):
+    def __init__(self, name="Ion Popescu", money=1000):
         self._name = name
         self._cards = []
-        self._revealed = 0
+        self._money = money
 
     def name(self):
         """ getter for the player's name """
@@ -112,6 +133,18 @@ class PokerPlayer(object):
         for card in self._cards:
             print "I have a", card
 
+    def collect_money(self, total):
+        """ collect money in case of winning, add to total player's money"""
+        self._money += total
+
+    def action(self, pot):
+        """ return check, call, raise or fold
+            some algorithm to bet/play """
+        result = ("call", pot)
+        if pot > self._money:
+            result = ("check", 0)
+        return result
+
     def __repr__(self):
         return self._name
 
@@ -122,7 +155,6 @@ class PokerDealer(object):
         self._deck = Deck(full=True)
         self._players = []
         self._game_on = False
-        self._house = PokerPlayer("House")
 
     def add_player(self, player):
         """ method to add players to the game, before the game starts """
@@ -131,32 +163,25 @@ class PokerDealer(object):
         else:
             print "Players cannot join while a game is ongoing"
 
-    def deal_initial(self):
+    def deal_hole(self):
         """ method to deal the initial 2 cards """
         for player in self._players:
-            print "Dealing 2 cards to Player", player.name()
+            print "Dealing 3 cards to Player", player.name()
+            player.receive_card(self._deck.remove_card())
             player.receive_card(self._deck.remove_card())
             player.receive_card(self._deck.remove_card())
 
-    def deal_rest(self):
-        """ method to deal the rest of three cards to players """
-        for time in range(3):
-            for player in self._players:
-                print "Dealing the {0}th card to Player {1}".format(str(time + 3), player.name())
-                player.receive_card(self._deck.remove_card())
+    def deal_turn(self):
+        """ method to deal the fourth card to players """
+        for player in self._players:
+            print "Dealing the turn card to Player", player
+            player.receive_card(self._deck.remove_card())
 
-    def deal_house(self):
-        """ Dealing cards to House """
-        print "Dealing first card to", self._house.name()
-        self._house.receive_card(self._deck.remove_card())
-        print "Dealing second card to", self._house.name()
-        self._house.receive_card(self._deck.remove_card())
-        print "Dealing third card to", self._house.name()
-        self._house.receive_card(self._deck.remove_card())
-        print "Dealing fourth card to", self._house.name()
-        self._house.receive_card(self._deck.remove_card())
-        print "Dealing fifth card to", self._house.name()
-        self._house.receive_card(self._deck.remove_card())
+    def deal_river(self):
+        """ method to deal the fifth card to players """
+        for player in self._players:
+            print "Dealing the river card to Player", player
+            player.receive_card(self._deck.remove_card())
 
     def reveal_players(self):
         """ ask players to reveal their hand """
@@ -164,36 +189,78 @@ class PokerDealer(object):
             print "Player {0} reveals their cards:".format(player)
             player.reveal()
 
-    def reveal_house(self):
-        """ reveal house's hand """
-        print "Revealing House's cards:"
-        self._house.reveal()
+    def _bet_round(self, pot=5, total=0):
+        """ a betting round in which players call, raise, check of fold """
+        for player in self._players[:]:
+            result, amount = player.action(pot)
+            print "Player {0} has {1}ed".format(player, result)
+            if result == "call":
+                total += 5
+            elif result == "fold":
+                self._players.remove(player)
+            elif result == "raise":
+                if amount > pot:
+                    total += amount
+                    pot = amount
+                else:
+                    print "Cannot raise less than the pot"
+        return (total, pot)
+
+    def _check_if_game_on(self, total):
+        """ check if game is over and we have a winner """
+        result = True
+        if len(self._players) == 1:
+            winner = self._players[0]
+            print "We have a winner:", winner
+            winner.collect_money(total)
+            result = False
+        elif not self._players:
+            print "All folded, game over without a winner"
+            result = False
+        return result
 
     def start_game(self):
         """ method to start a game of Poker
             it starts when there are enough Players and the game was not already started """
         if len(self._players) > 2 and (not self._game_on):
             self._game_on = True
+            pot = 5
+            total = 0
             for player in self._players:
                 player.start_game()
-            self.deal_initial()
-            print
-            self.deal_rest()
-            print
-            self.deal_house()
-            # now players should put forward some cards to be changed
-            # then house does the same
+            self.deal_hole()
             # there are some bets
-            # then everybody reveals their cards
-            self.reveal_players()
-            self.reveal_house()
-            # then decide who wins
-            print "Who won?"
+            total, pot = self._bet_round(pot=pot, total=total)
+            print
+
+            self._game_on = self._check_if_game_on(total)
+            if self._game_on:
+                self.deal_turn()
+                total, pot = self._bet_round(pot=pot, total=total)
+                print "Total is now", total
+                print
+                self._game_on = self._check_if_game_on(total)
+                if self._game_on:
+                    self.deal_river()
+                    total, pot = self._bet_round(pot=pot, total=total)
+                    print "Total is now", total
+                    print
+                    self._game_on = self._check_if_game_on(total)
+                    if self._game_on:
+                        self.reveal_players()
+                        print "Total is now", total
+                        # then decide who wins
+                        print "Who won?"
+                else:
+                    total = 0
+                    print
+            else:
+                total = 0
+                print
 
     def reset(self):
         """ method to reset the game of Poker """
         self._players = []
-        self._house = PokerPlayer("House")
         self._deck.collect_cards()
         #self._deck.shuffle()
         self._deck.sort()
