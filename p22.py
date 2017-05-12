@@ -25,7 +25,7 @@ class Card(object):
         return self._value
 
     def __repr__(self):
-        """ override representation as this is used in cmp and in displaying players' cards """
+        """ override representation as this is used in displaying players' cards """
         number = str(self._value)
         if self._value == 10:
             number = "ace"
@@ -40,8 +40,11 @@ class Card(object):
     def __cmp__(self, obj):
         """ override comparison operator for sorted """
         if isinstance(obj, Card):
-            result = self._value - obj.value()
-            if result == 0:
+            # order by color, so all colors stick together
+            # and then by number, though here, ace will be less than jack or queen or king
+            if self._color == obj.color():
+                result = self._value - obj.value()
+            else:
                 result = self._color < obj.color()
             return result
         return NotImplemented
@@ -180,6 +183,7 @@ class PokerDealer(object):
             self.deal_house()
             # now players should put forward some cards to be changed
             # then house does the same
+            # there are some bets
             # then everybody reveals their cards
             self.reveal_players()
             self.reveal_house()
@@ -191,9 +195,9 @@ class PokerDealer(object):
         self._players = []
         self._house = PokerPlayer("House")
         self._deck.collect_cards()
-        self._deck.shuffle()
-        #self._deck.sort()
-        #self._deck.print_cards()
+        #self._deck.shuffle()
+        self._deck.sort()
+        self._deck.print_cards()
 
 if __name__ == "__main__":
     # uhh the next are seen as constants, so I had to uppercase them
