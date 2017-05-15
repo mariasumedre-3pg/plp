@@ -3,21 +3,24 @@
 from __future__ import unicode_literals
 from random import shuffle
 
-COLORS = ["heart",
-          "spade",
-          "club",
-          "star"]
+import itertools
+from operator import itemgetter
+
+SUITES = [u'\N{Black Heart Suit}',
+          u'\N{Black Spade Suit}',
+          u'\N{Black Club Suit}',
+          u'\N{Black Diamond Suit}']
 
 class Suite(object):
     """ enum like thing for the suites in a  deck """
-    HEARTS = 'Heart'
-    SPADE = 'Spade'
-    CLUB = 'Club'
-    DIAMOND = 'Diamond'
-    # HEARTS = '\N{Black Heart Suit}'
-    # SPADE = '\N{Black Spade Suit}'
-    # CLUB = '\N{Black Club Suit}'
-    # DIAMOND = '\N{Black Diamond Suit}'
+    #HEARTS = 'Heart'
+    #SPADE = 'Spade'
+    #CLUB = 'Club'
+    #DIAMOND = 'Diamond'
+    HEARTS = u'\N{Black Heart Suit}'
+    SPADE = u'\N{Black Spade Suit}'
+    CLUB = u'\N{Black Club Suit}'
+    DIAMOND = u'\N{Black Diamond Suit}'
 
 class Card(object):
     """ Card class models a card from the 52 card deck (used for e.g. in Poker)
@@ -34,19 +37,21 @@ class Card(object):
 
     def value(self):
         """ getter for the value of the card """
-        return self._value
+        return self._value if self._value != 1 else 14
 
     def __repr__(self):
         """ override representation as this is used in displaying players' cards """
         return "Card(value={value}, color='{color}')".format(
             value=self._value,
             color=self._color
-        )
+        ).encode("utf-8")
 
     def __str__(self):
         """ value gets printed as is, but over 10 we have ace, jack, queen, king """
+        # there are also unicode characters for the actual cards, starting with U+1F0A
+        # that would be fun to try :D
         number = str(self._value)
-        if self._value == 10:
+        if self._value == 1:
             number = "ace"
         elif self._value == 11:
             number = "jack"
@@ -54,7 +59,7 @@ class Card(object):
             number = "queen"
         elif self._value == 13:
             number = "king"
-        return "{0} of {1}".format(number, self._color)
+        return u"{0} of {1}".format(number, self._color).encode('utf-8').strip()
 
     def __cmp__(self, obj):
         """ override comparison operator for sorted """
@@ -98,7 +103,7 @@ class Deck(object):
 
     def collect_cards(self):
         """ re-stock the deck to the full 52 cards """
-        self._cards = [Card(value, color) for color in COLORS for value in range(1, 14)]
+        self._cards = [Card(value, color) for color in SUITES for value in range(1, 14)]
 
     def __repr__(self):
         return repr(self._cards)
@@ -108,21 +113,139 @@ class Deck(object):
         for card in self._cards:
             print card
 
+class PokerHand(object):
+    """ class to model a Hand in Poker """
+    def __init__(self):
+        """ initializes a Hand object which has 5 cards and
+            can be compared """
+        self.cards = []
+
+    def add_card(self, card):
+        """ adds a card to the hand, if there are less than 4 cards in Hand """
+        if isinstance(card, Card) and len(self.cards) < 5:
+            self.cards.append(card)
+
+    def add_cards(self, cards):
+        """ adds more than a card to the hand,
+            as long as there will be less then 5 cards in total """
+        if isinstance(cards, list) and len(self.cards) + len(cards) <= 5:
+            self.cards += cards
+
+    def __iter__(self):
+        return iter(self.cards)
+
+    def __str__(self):
+        return u''.join(self.cards)
+
+    def __repr__(self):
+        return repr(self.cards)
+
+    def consecutive(self, sorted_cards):
+        """ How many cards in hand are consecutive - for straight and straight flush
+            It doesn't recognize yet when an ace could be a placeholder for 1 (ace, two, three) """
+        result = 0
+        # we want to group the consecutive items, so we trick groupby with the lambda:
+        # lamba will output the same number for consecutive items, because we substract
+        # the value from the index (works the other way too)
+        # but the value from the lamba is used only for grouping, the actual elements in the
+        # grouping are the ones from sorted_cards (in iterable collections things)
+        for val_tuple in itertools.groupby(enumerate(sorted_cards), lambda (i, x): x.value() - i):
+            # for each val_tuple we have the card value like a key and a collection of suites
+            # e.g.:
+            # "i have for 2 a spade and a heart, for ace i have a club, a diamond and a spade"
+            temp = len(map(itemgetter(1), val_tuple[1]))
+            if temp > result:
+                result = temp
+        return result
+
+    def group_same_values(self, sorted_cards):
+        """ Group together cards with same value, to be used checking for pairs,
+            checking for full house, and for four of a kind """
+        result = []
+        temp = [(x.value(), x.color()) for x in sorted_cards]
+        for val, colors in itertools.groupby(temp, itemgetter(0)):
+            result.append((val, map(itemgetter(1), colors)))
+        return result
+
+    def compute_a_key(self):
+        """ Make a number out of the cards in hand to figure out a player's points
+            This must be fine-tuned as for now it just recognizes the big categories
+            """
+        result = 1 #nothing or high card means 1
+
+        flush = False
+        straight = False
+        one_pair = False
+        three_of_a_kind = False
+
+        sorted_cards = sorted(self.cards, key=lambda x: x.value())
+        #sorted_cards = sorted(self.cards, key=lambda x: x.color())
+
+        if len(self.cards) == 5:
+            collection = self.group_same_values(sorted_cards)
+            more_of_a_kind = [len(x[1]) for x in collection]
+
+            # test for a pair
+            if 2 in more_of_a_kind:
+                one_pair = True
+                result = 2
+
+            # test for two pairs
+            if len([x for x in more_of_a_kind if x == 2]) == 2:
+                result = 3
+
+            # test for three of a kind
+            if 3 in more_of_a_kind:
+                three_of_a_kind = True
+                result = 4
+
+            # test for straight
+            consec = self.consecutive(sorted_cards)
+            if consec == 5:
+                result = 5
+                straight = True
+
+            # test for flush:
+            f_heart = sum(itertools.imap(lambda x: x.color() == Suite.HEARTS, self.cards)) == 5
+            f_club = sum(itertools.imap(lambda x: x.color() == Suite.CLUB, self.cards)) == 5
+            f_diamond = sum(itertools.imap(lambda x: x.color() == Suite.DIAMOND, self.cards)) == 5
+            f_spade = sum(itertools.imap(lambda x: x.color() == Suite.SPADE, self.cards)) == 5
+            if f_heart or f_club or f_diamond or f_spade:
+                result = 6
+                flush = True
+
+            # test for full house
+            if one_pair and three_of_a_kind:
+                result = 7
+
+            #test for four of a kind
+            if 4 in more_of_a_kind:
+                result = 8
+
+            # test for straight flush
+            if straight and flush:
+                result = 9
+
+        return result
 
 class PokerPlayer(object):
     """ PokerPlayer class models the Poker players, who expect cards from PokerDealer """
     def __init__(self, name="Ion Popescu", money=1000):
         self._name = name
         self._cards = []
+        self._community = []
+        self.hand = []
         self._money = money
 
     def name(self):
         """ getter for the player's name """
         return self._name
 
-    def start_game(self):
-        """ reset the cards """
+    def start_game(self, community):
+        """ reset the cards
+            also ... 'pointer' to community cards"""
         self._cards = []
+        self._community = community
 
     def receive_card(self, card):
         """ save the card from the dealer """
@@ -132,6 +255,22 @@ class PokerPlayer(object):
         """ Player reveals all cards """
         for card in self._cards:
             print "I have a", card
+        #for card in self._community:
+        #    print "Community card I could use:", card
+
+    def points(self):
+        """ figure out maximum points that can be obtained """
+        sorted_community = sorted(self._community, key=lambda x: x.value())
+        community_comb = itertools.combinations(sorted_community, 3)
+        max_points = 0
+        for possibility in community_comb:
+            hand = PokerHand()
+            hand.add_cards(self._cards)
+            hand.add_cards([card for card in possibility])
+            points = hand.compute_a_key()
+            if points > max_points:
+                max_points = points
+        return max_points
 
     def collect_money(self, total):
         """ collect money in case of winning, add to total player's money"""
@@ -145,6 +284,15 @@ class PokerPlayer(object):
             result = ("check", 0)
         return result
 
+    def build_hand(self):
+        """ figure out which is the best hand with the mandatory _cards
+            and the optional _community """
+        self.hand = [] #first make sure hand is new
+        self.hand += self._cards #these are mandatory
+        # loop through all possibilities
+        # and compare for best possibility
+
+
     def __repr__(self):
         return self._name
 
@@ -155,6 +303,7 @@ class PokerDealer(object):
         self._deck = Deck(full=True)
         self._players = []
         self._game_on = False
+        self.community = []
 
     def add_player(self, player):
         """ method to add players to the game, before the game starts """
@@ -166,22 +315,32 @@ class PokerDealer(object):
     def deal_hole(self):
         """ method to deal the initial 2 cards """
         for player in self._players:
-            print "Dealing 3 cards to Player", player.name()
+            print "Dealing 2 cards to Player", player.name()
             player.receive_card(self._deck.remove_card())
             player.receive_card(self._deck.remove_card())
-            player.receive_card(self._deck.remove_card())
+
+    def deal_flop(self):
+        """ method to deal the three cards to community """
+        print "Dealing the flop cards"
+        for idx in range(1, 4):
+            print "Dealing the {0} card to community".format(idx)
+            card = self._deck.remove_card()
+            self.community.append(card)
+            print "It's a", card
 
     def deal_turn(self):
-        """ method to deal the fourth card to players """
-        for player in self._players:
-            print "Dealing the turn card to Player", player
-            player.receive_card(self._deck.remove_card())
+        """ method to deal the fourth card to placommunityyers """
+        print "Dealing the turn card to community"
+        card = self._deck.remove_card()
+        self.community.append(card)
+        print "It's a", card
 
     def deal_river(self):
-        """ method to deal the fifth card to players """
-        for player in self._players:
-            print "Dealing the river card to Player", player
-            player.receive_card(self._deck.remove_card())
+        """ method to deal the fifth card to community """
+        print "Dealing the river card to community"
+        card = self._deck.remove_card()
+        self.community.append(card)
+        print "It's a", card
 
     def reveal_players(self):
         """ ask players to reveal their hand """
@@ -224,39 +383,25 @@ class PokerDealer(object):
             it starts when there are enough Players and the game was not already started """
         if len(self._players) > 2 and (not self._game_on):
             self._game_on = True
-            pot = 5
-            total = 0
-            for player in self._players:
-                player.start_game()
-            self.deal_hole()
-            # there are some bets
-            total, pot = self._bet_round(pot=pot, total=total)
-            print
 
-            self._game_on = self._check_if_game_on(total)
-            if self._game_on:
-                self.deal_turn()
-                total, pot = self._bet_round(pot=pot, total=total)
-                print "Total is now", total
-                print
-                self._game_on = self._check_if_game_on(total)
-                if self._game_on:
-                    self.deal_river()
-                    total, pot = self._bet_round(pot=pot, total=total)
-                    print "Total is now", total
-                    print
-                    self._game_on = self._check_if_game_on(total)
-                    if self._game_on:
-                        self.reveal_players()
-                        print "Total is now", total
-                        # then decide who wins
-                        print "Who won?"
-                else:
-                    total = 0
-                    print
-            else:
-                total = 0
-                print
+            for player in self._players:
+                player.start_game(self.community)
+            self.deal_hole()
+            self.deal_flop()
+            self.deal_turn()
+            self.deal_river()
+
+            self.reveal_players()
+            max_points = 0
+            winner = None
+            for player in self._players:
+                points = player.points()
+                if points > max_points:
+                    max_points = points
+                    winner = player
+            print "Who won?"
+            print winner
+
 
     def reset(self):
         """ method to reset the game of Poker """
