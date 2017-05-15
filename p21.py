@@ -5,7 +5,9 @@ def help_check_element(element):
         as key to a dictionary """
     result = True
     # by trial i found out that lists, dictionaries and sets cannot be dictionary keys
-    if isinstance(element, (list, dict, set)):
+    #if isinstance(element, (list, dict, set)):
+    #if (not hasattr(element, "__hash__")) or element.__hash__ is None:
+    if not callable(element.__hash__):
         result = False
     # tuples can be dictionary keys as long as they don't contain the evil types above
     elif isinstance(element, tuple):
