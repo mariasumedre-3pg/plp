@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """ Add unit-tests for p22, the Poker problem here
     We exercise this way how modules work
     And the p22.py doesn't get any more lines """
@@ -8,14 +9,14 @@ import p22
 def test_card_default_values():
     """ test the Card class """
     tested = p22.Card()
-    assert str(tested) == "10 of Hearts"
-    assert repr(tested) == "Card(value=10, color='Hearts')"
+    assert unicode(tested) == u"10♥"
+    assert repr(tested) == "Card(value=10, color='hearts')"
 
     #copy = eval(repr(tested))
     #assert copy == tested
     copy = tested
-    assert str(copy) == "10 of Hearts"
-    assert repr(copy) == "Card(value=10, color='Hearts')"
+    assert unicode(copy) == u"10♥"
+    assert repr(copy) == "Card(value=10, color='hearts')"
 
 def test_player():
     """ test the Player class """

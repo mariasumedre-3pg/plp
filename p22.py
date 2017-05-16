@@ -8,7 +8,10 @@ from random import shuffle
 import itertools
 from operator import itemgetter
 
-
+# HEARTS = u'\N{Black Heart Suit}'
+# SPADE = u'\N{Black Spade Suit}'
+# CLUB = u'\N{Black Club Suit}'
+# DIAMOND = u'\N{Black Diamond Suit}'
 class Suite(object):
     """ enum like thing for the suites in a  deck """
     HEARTS = 'hearts'
@@ -35,15 +38,6 @@ class Suite(object):
         }
         pretty = table[self.name.lower()]
         return pretty #.encode('utf8')
-    # HEARTS = u'\N{Black Heart Suit}'
-    # SPADE = u'\N{Black Spade Suit}'
-    # CLUB = u'\N{Black Club Suit}'
-    # DIAMOND = u'\N{Black Diamond Suit}'
-
-SUITES = [Suite.SPADE,
-          Suite.HEARTS,
-          Suite.DIAMOND,
-          Suite.CLUB]
 
 class Card(object):
     """ Card class models a card from the 52 card deck (used for e.g. in Poker)
@@ -81,7 +75,7 @@ class Card(object):
         elif self._value == 13:
             number = "K"
         #return u"{0} of {1}".format(number, self._color).encode('utf-8').strip()
-        color = u'{}'.format(Suite(self._color))
+        #color = u'{}'.format(Suite(self._color))
         card = u"{0}{1}".format(number, Suite(self._color))
         return card
 
@@ -191,70 +185,53 @@ class PokerHand(object):
             result.append((val, map(itemgetter(1), colors)))
         return result
 
-    def compute_a_key(self):
-        """ Make a number out of the cards in hand to figure out a player's points
-            This must be fine-tuned as for now it just recognizes the big categories
-            """
-        result = 1 #nothing or high card means 1
-
-        flush = False
-        straight = False
-        one_pair = False
-        three_of_a_kind = False
-
+    def compute_value2(self):
+        """ compute a value for the combination of cards in hand
+            there must be 5 cards in hand """
+        # so a player will order their cards by number,
+        # check if cards are sequential for a straight, or they have pairs
+        # or if all colors match
+        result = None
         sorted_cards = sorted(self.cards, key=lambda x: x.value())
-        #sorted_cards = sorted(self.cards, key=lambda x: x.color())
-
         if len(self.cards) == 5:
-            collection = self.group_same_values(sorted_cards)
-            more_of_a_kind = [len(x[1]) for x in collection]
-
-            # test for a pair
-            if 2 in more_of_a_kind:
-                one_pair = True
-                result = 2
-
-            # test for two pairs
-            if len([x for x in more_of_a_kind if x == 2]) == 2:
-                result = 3
-
-            # test for three of a kind
-            if 3 in more_of_a_kind:
-                three_of_a_kind = True
-                result = 4
-
-            # test for straight
+            flush = len([x for x in self.cards if x.color() == self.cards[0].color()]) == 5
+            if flush:
+                result = "6"
             consec = self.consecutive(sorted_cards)
-            if consec == 5:
-                result = 5
-                straight = True
+            if consec == 5: #if all 5 cards are sequential
+                if flush:
+                    # straight flush, starting with first card in sorted list
+                    result = "9" + str(sorted_cards[0].value())
+                else:
+                    # straight, starting with first card in sorted list
+                    result = "5" + str(sorted_cards[0].value())
+            else: # we might have pairs
+                collection = self.group_same_values(sorted_cards)
+                pairs = [x for x in collection if len(x[1]) == 2]
+                high = max([x for x in collection if len(x[1]) == 1], key=lambda x: x[0])
+                three_of_a_kind = [x for x in collection if len(x[1]) == 3]
+                four_of_a_kind = [x for x in collection if len(x[1]) == 4]
 
-            # test for flush:
-            f_heart = sum(itertools.imap(lambda x: x.color() == Suite.HEARTS, self.cards)) == 5
-            f_club = sum(itertools.imap(lambda x: x.color() == Suite.CLUB, self.cards)) == 5
-            f_diamond = sum(itertools.imap(lambda x: x.color() == Suite.DIAMOND, self.cards)) == 5
-            f_spade = sum(itertools.imap(lambda x: x.color() == Suite.SPADE, self.cards)) == 5
-            if f_heart or f_club or f_diamond or f_spade:
-                result = 6
-                flush = True
-
-            # test for full house
-            if one_pair and three_of_a_kind:
-                result = 7
-
-            #test for four of a kind
-            if 4 in more_of_a_kind:
-                result = 8
-
-            # test for straight flush
-            if straight and flush:
-                result = 9
+                # this is the high card in case we have nothing (reuse the variable)
+                high = "1" + chr(ord('a') + high[0])
+                result = high
+                if len(pairs) == 2:
+                    result = "3" + chr(ord('a') + pairs[0][0] + pairs[1][0]) + high
+                elif len(pairs) == 1:
+                    result = "2" + chr(ord('a') + pairs[0][0]) + high
+                if len(three_of_a_kind) == 1:
+                    if len(pairs) == 1:
+                        result = "7" + chr(ord('a') + three_of_a_kind[0][0] + pairs[0][0])
+                    else:
+                        result = "4" + chr(ord('a') + three_of_a_kind[0][0]) + high
+                if len(four_of_a_kind) == 1:
+                    result = "8" + chr(ord('a') + four_of_a_kind[0][0]) + high
 
         return result
 
 class PokerPlayer(object):
     """ PokerPlayer class models the Poker players, who expect cards from PokerDealer """
-    def __init__(self, name="Ion Popescu", money=1000):
+    def __init__(self, name="Ion Popescu"):
         self.name = name
         self.cards = []
         self.community = []
@@ -279,15 +256,21 @@ class PokerPlayer(object):
 
     def points(self):
         """ figure out maximum points that can be obtained """
+        # this is probably optional
         sorted_community = sorted(self.community, key=lambda x: x.value())
+        # combinations of 5 cards taken in groups of 3
+        # each player has their fixed 2 cards, we need an aditional 3 to make a hand
         community_comb = itertools.combinations(sorted_community, 3)
         max_points = 0
-        max_hand = None
+        max_hand = None # just to print it
+        # compute points for each combination, we'll return the max points of the combination
+        # (which we'll print)
         for possibility in community_comb:
-            hand = PokerHand()
+            hand = PokerHand() # create the hand
             hand.add_cards(self.cards)
             hand.add_cards([card for card in possibility])
-            points = hand.compute_a_key()
+            #the simple version that just recognizes the different poker hands
+            points = hand.compute_value2()
             if points > max_points:
                 max_points = points
                 max_hand = hand
@@ -341,30 +324,13 @@ class PokerDealer(object):
         print "Dealing the river card to community"
         card = self._deck.remove_card()
         self.community.append(card)
-        print u"It's a".format(card)
+        print u"It's a {}".format(card)
 
     def reveal_players(self):
         """ ask players to reveal their hand """
         for player in self._players:
             print "Player {0} reveals their cards:".format(player)
             player.reveal()
-
-    def _bet_round(self, pot=5, total=0):
-        """ a betting round in which players call, raise, check of fold """
-        for player in self._players[:]:
-            result, amount = player.action(pot)
-            print "Player {0} has {1}ed".format(player, result)
-            if result == "call":
-                total += 5
-            elif result == "fold":
-                self._players.remove(player)
-            elif result == "raise":
-                if amount > pot:
-                    total += amount
-                    pot = amount
-                else:
-                    print "Cannot raise less than the pot"
-        return (total, pot)
 
     def _check_if_game_on(self, total):
         """ check if game is over and we have a winner """
