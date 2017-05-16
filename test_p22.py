@@ -33,3 +33,25 @@ def test_player():
     tested.receive_card(p22.Card())
     assert len(tested.cards) == 1
     assert tested.cards[0] == p22.Card()
+    for item in range(1, 5):
+        tested.receive_card(p22.Card(value=item))
+    assert len(tested.cards) == 5
+    assert tested.hand == []
+
+def test_deck():
+    """ test the Deck class - which will hold one deck of 52 cards for poker """
+    tested = p22.Deck(False)
+    assert tested.cards == []
+    #assert tested.remove_card() is None
+
+    tested = p22.Deck(True)
+    same = p22.Deck()
+    assert tested != same
+    assert tested.sort() == same.sort()
+
+    # 4 colors, each color has 13 cards
+    assert len([x for x in tested if x.color() == 'hearts']) == 13
+    assert len([x for x in tested if x.color() == 'spades']) == 13
+    assert len([x for x in tested if x.color() == 'clubs']) == 13
+    assert len([x for x in tested if x.color() == 'diamonds']) == 13
+
