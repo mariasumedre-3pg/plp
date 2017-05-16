@@ -231,70 +231,44 @@ class PokerHand(object):
 class PokerPlayer(object):
     """ PokerPlayer class models the Poker players, who expect cards from PokerDealer """
     def __init__(self, name="Ion Popescu", money=1000):
-        self._name = name
-        self._cards = []
-        self._community = []
+        self.name = name
+        self.cards = []
+        self.community = []
         self.hand = []
-        self._money = money
-
-    def name(self):
-        """ getter for the player's name """
-        return self._name
 
     def start_game(self, community):
         """ reset the cards
             also ... 'pointer' to community cards"""
-        self._cards = []
-        self._community = community
+        self.cards = []
+        self.community = community
 
     def receive_card(self, card):
         """ save the card from the dealer """
-        self._cards.append(card)
+        self.cards.append(card)
 
     def reveal(self):
         """ Player reveals all cards """
-        for card in self._cards:
+        for card in self.cards:
             print "I have a", card
         #for card in self._community:
         #    print "Community card I could use:", card
 
     def points(self):
         """ figure out maximum points that can be obtained """
-        sorted_community = sorted(self._community, key=lambda x: x.value())
+        sorted_community = sorted(self.community, key=lambda x: x.value())
         community_comb = itertools.combinations(sorted_community, 3)
         max_points = 0
         for possibility in community_comb:
             hand = PokerHand()
-            hand.add_cards(self._cards)
+            hand.add_cards(self.cards)
             hand.add_cards([card for card in possibility])
             points = hand.compute_a_key()
             if points > max_points:
                 max_points = points
         return max_points
 
-    def collect_money(self, total):
-        """ collect money in case of winning, add to total player's money"""
-        self._money += total
-
-    def action(self, pot):
-        """ return check, call, raise or fold
-            some algorithm to bet/play """
-        result = ("call", pot)
-        if pot > self._money:
-            result = ("check", 0)
-        return result
-
-    def build_hand(self):
-        """ figure out which is the best hand with the mandatory _cards
-            and the optional _community """
-        self.hand = [] #first make sure hand is new
-        self.hand += self._cards #these are mandatory
-        # loop through all possibilities
-        # and compare for best possibility
-
-
     def __repr__(self):
-        return self._name
+        return self.name
 
 
 class PokerDealer(object):
@@ -315,7 +289,7 @@ class PokerDealer(object):
     def deal_hole(self):
         """ method to deal the initial 2 cards """
         for player in self._players:
-            print "Dealing 2 cards to Player", player.name()
+            print "Dealing 2 cards to Player", player.name
             player.receive_card(self._deck.remove_card())
             player.receive_card(self._deck.remove_card())
 
