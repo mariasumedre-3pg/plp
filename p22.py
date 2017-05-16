@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """ Python script to implement P2 of Phase 2 of Python Learning Program
     This is the Poker game with classes and stuff """
 from __future__ import unicode_literals
@@ -6,21 +8,42 @@ from random import shuffle
 import itertools
 from operator import itemgetter
 
-SUITES = [u'\N{Black Heart Suit}',
-          u'\N{Black Spade Suit}',
-          u'\N{Black Club Suit}',
-          u'\N{Black Diamond Suit}']
 
 class Suite(object):
     """ enum like thing for the suites in a  deck """
-    #HEARTS = 'Heart'
-    #SPADE = 'Spade'
-    #CLUB = 'Club'
-    #DIAMOND = 'Diamond'
-    HEARTS = u'\N{Black Heart Suit}'
-    SPADE = u'\N{Black Spade Suit}'
-    CLUB = u'\N{Black Club Suit}'
-    DIAMOND = u'\N{Black Diamond Suit}'
+    HEARTS = 'hearts'
+    SPADE = 'spades'
+    CLUB = 'clubs'
+    DIAMOND = 'diamonds'
+
+    def __init__(self, name):
+        self.name = name
+
+    @classmethod
+    def elements(cls):
+        return [cls.SPADE,
+                cls.HEARTS,
+                cls.DIAMOND,
+                cls.CLUB]
+
+    def __str__(self):
+        table = {
+            self.HEARTS: '♥',
+            self.SPADE: '♠',
+            self.CLUB: '♦',
+            self.DIAMOND: '♣',
+        }
+        pretty = table[self.name.lower()]
+        return pretty #.encode('utf8')
+    # HEARTS = u'\N{Black Heart Suit}'
+    # SPADE = u'\N{Black Spade Suit}'
+    # CLUB = u'\N{Black Club Suit}'
+    # DIAMOND = u'\N{Black Diamond Suit}'
+
+SUITES = [Suite.SPADE,
+          Suite.HEARTS,
+          Suite.DIAMOND,
+          Suite.CLUB]
 
 class Card(object):
     """ Card class models a card from the 52 card deck (used for e.g. in Poker)
@@ -44,22 +67,23 @@ class Card(object):
         return "Card(value={value}, color='{color}')".format(
             value=self._value,
             color=self._color
-        ).encode("utf-8")
+        )
 
     def __str__(self):
         """ value gets printed as is, but over 10 we have ace, jack, queen, king """
-        # there are also unicode characters for the actual cards, starting with U+1F0A
-        # that would be fun to try :D
         number = str(self._value)
         if self._value == 1:
-            number = "ace"
+            number = "A"
         elif self._value == 11:
-            number = "jack"
+            number = "J"
         elif self._value == 12:
-            number = "queen"
+            number = "Q"
         elif self._value == 13:
-            number = "king"
-        return u"{0} of {1}".format(number, self._color).encode('utf-8').strip()
+            number = "K"
+        #return u"{0} of {1}".format(number, self._color).encode('utf-8').strip()
+        color = u'{}'.format(Suite(self._color))
+        card = u"{0}{1}".format(number, Suite(self._color))
+        return card
 
     def __cmp__(self, obj):
         """ override comparison operator for sorted """
@@ -79,38 +103,38 @@ class Deck(object):
     def __init__(self, full=True):
         """ constructor for the Deck class
             expects a boolean value to build a full Deck or an empty one """
-        self._cards = []
+        self.cards = []
         if full:
             self.collect_cards()
             self.shuffle()
 
     def __iter__(self):
-        return iter(self._cards)
+        return iter(self.cards)
 
     def shuffle(self):
         """ shuffle the cards, if any """
-        if self._cards:
-            shuffle(self._cards)
+        if self.cards:
+            shuffle(self.cards)
 
     def sort(self):
         """ sort the cards, if any """
-        if self._cards:
-            self._cards = sorted(self._cards)
+        if self.cards:
+            self.cards = sorted(self.cards)
 
     def remove_card(self):
         """ remove a Card from the Deck and return it (typically to the player) """
-        return self._cards.pop()
+        return self.cards.pop()
 
     def collect_cards(self):
         """ re-stock the deck to the full 52 cards """
-        self._cards = [Card(value, color) for color in SUITES for value in range(1, 14)]
+        self.cards = [Card(value, color) for color in Suite.elements() for value in range(1, 14)]
 
     def __repr__(self):
-        return repr(self._cards)
+        return repr(self.cards)
 
     def print_cards(self):
         """ print/show cards in deck """
-        for card in self._cards:
+        for card in self.cards:
             print card
 
 class PokerHand(object):
@@ -135,10 +159,10 @@ class PokerHand(object):
         return iter(self.cards)
 
     def __str__(self):
-        return u''.join(self.cards)
+        return ' '.join(map(unicode, self.cards))
 
-    def __repr__(self):
-        return repr(self.cards)
+    # def __repr__(self):
+    #     return repr(self.cards)
 
     def consecutive(self, sorted_cards):
         """ How many cards in hand are consecutive - for straight and straight flush
@@ -249,7 +273,7 @@ class PokerPlayer(object):
     def reveal(self):
         """ Player reveals all cards """
         for card in self.cards:
-            print "I have a", card
+            print u"I have a {}".format(card)
         #for card in self._community:
         #    print "Community card I could use:", card
 
@@ -258,6 +282,7 @@ class PokerPlayer(object):
         sorted_community = sorted(self.community, key=lambda x: x.value())
         community_comb = itertools.combinations(sorted_community, 3)
         max_points = 0
+        max_hand = None
         for possibility in community_comb:
             hand = PokerHand()
             hand.add_cards(self.cards)
@@ -265,6 +290,8 @@ class PokerPlayer(object):
             points = hand.compute_a_key()
             if points > max_points:
                 max_points = points
+                max_hand = hand
+        print "Player {name} has best hand {hand}".format(name=self.name, hand=max_hand)
         return max_points
 
     def __repr__(self):
@@ -300,21 +327,21 @@ class PokerDealer(object):
             print "Dealing the {0} card to community".format(idx)
             card = self._deck.remove_card()
             self.community.append(card)
-            print "It's a", card
+            print u"It's a {}".format(card)
 
     def deal_turn(self):
         """ method to deal the fourth card to placommunityyers """
         print "Dealing the turn card to community"
         card = self._deck.remove_card()
         self.community.append(card)
-        print "It's a", card
+        print u"It's a {}".format(card)
 
     def deal_river(self):
         """ method to deal the fifth card to community """
         print "Dealing the river card to community"
         card = self._deck.remove_card()
         self.community.append(card)
-        print "It's a", card
+        print u"It's a".format(card)
 
     def reveal_players(self):
         """ ask players to reveal their hand """
