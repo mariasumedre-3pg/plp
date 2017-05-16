@@ -208,22 +208,36 @@ class PokerHand(object):
             else: # we might have pairs
                 collection = self.group_same_values(sorted_cards)
                 pairs = [x for x in collection if len(x[1]) == 2]
-                high = max([x for x in collection if len(x[1]) == 1], key=lambda x: x[0])
+                high = [x for x in collection if len(x[1]) == 1]
                 three_of_a_kind = [x for x in collection if len(x[1]) == 3]
                 four_of_a_kind = [x for x in collection if len(x[1]) == 4]
 
                 # this is the high card in case we have nothing (reuse the variable)
-                high = "1" + chr(ord('a') + high[0])
-                result = high
+                if high != []:
+                    high = max(high, key=lambda x: x[0])
+                    high = "1" + chr(ord('a') + high[0])
+                    result = high
+                else:
+                    high = ""
+                # two pairs
                 if len(pairs) == 2:
                     result = "3" + chr(ord('a') + pairs[0][0] + pairs[1][0]) + high
+                # one pair
                 elif len(pairs) == 1:
                     result = "2" + chr(ord('a') + pairs[0][0]) + high
+                # three of a kind
                 if len(three_of_a_kind) == 1:
+                    # or is it full house?
                     if len(pairs) == 1:
-                        result = "7" + chr(ord('a') + three_of_a_kind[0][0] + pairs[0][0])
+                        # in case of full house, the grouping of 3 cards rank higher
+                        letter_for_3 = chr(ord('a') + three_of_a_kind[0][0])
+                        # i don't think it can come to this, unless there are more decks in play
+                        letter_for_pair = chr(ord('a') + pairs[0][0])
+                        result = "7" + letter_for_3 + letter_for_pair
                     else:
+                        # nah, just three of a kind
                         result = "4" + chr(ord('a') + three_of_a_kind[0][0]) + high
+                # four of a kind
                 if len(four_of_a_kind) == 1:
                     result = "8" + chr(ord('a') + four_of_a_kind[0][0]) + high
 
@@ -245,7 +259,8 @@ class PokerPlayer(object):
 
     def receive_card(self, card):
         """ save the card from the dealer """
-        self.cards.append(card)
+        if len(self.cards) < 5:
+            self.cards.append(card)
 
     def reveal(self):
         """ Player reveals all cards """
