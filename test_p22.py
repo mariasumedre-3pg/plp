@@ -18,6 +18,57 @@ def test_card_default_values():
     assert unicode(copy) == u"10♥"
     assert repr(copy) == "Card(value=10, color='hearts')"
 
+    # test when color is set to hearts by default
+    tested = p22.Card(value=1)
+    assert unicode(tested) == u"A♥"
+    tested = p22.Card(value=11)
+    assert unicode(tested) == u"J♥"
+    tested = p22.Card(value=12)
+    assert unicode(tested) == u"Q♥"
+    tested = p22.Card(value=13)
+    assert unicode(tested) == u"K♥"
+    tested = p22.Card(value=7)
+    assert unicode(tested) == u"7♥"
+
+    # test when value is put to 10 by default
+    tested = p22.Card(color='hearts')
+    assert unicode(tested) == u"10♥"
+    tested = p22.Card(color='spades')
+    assert unicode(tested) == u"10♠"
+    tested = p22.Card(color='clubs')
+    assert unicode(tested) == u"10♣"
+    tested = p22.Card(color='diamonds')
+    assert unicode(tested) == u"10♦"
+
+    tested = p22.Card()
+    assert tested == p22.Card(color='hearts', value=10)
+
+def test_card2():
+    """ test the functionality of Card class """
+    # test all possbile correct values
+    suites_dict = {'hearts':u'♥', 'spades':u'♠', 'clubs':u'♣', 'diamonds':u'♦'}
+    for key in suites_dict:
+        val = suites_dict[key]
+        tested = p22.Card(value=1, color=key)
+        assert unicode(tested) == (u"A" + val)
+        tested = p22.Card(value=11, color=key)
+        assert unicode(tested) == (u"J" + val)
+        tested = p22.Card(value=12, color=key)
+        assert unicode(tested) == (u"Q" + val)
+        tested = p22.Card(value=13, color=key)
+        assert unicode(tested) == (u"K" + val)
+    for key in suites_dict:
+        val = suites_dict[key]
+        for number in range(2, 11):
+            tested = p22.Card(value=number, color=key)
+            assert unicode(tested) == (unicode(number) + val)
+    # test out of bounds value
+    tested = p22.Card(value=23)
+    exp = p22.Card(value=1)
+    assert tested.value() == exp.value()
+    tested = p22.Card(value=-12)
+    assert tested.value() == exp.value()
+
 def test_player():
     """ test the Player class """
     tested = p22.PokerPlayer()
@@ -37,6 +88,7 @@ def test_player():
         tested.receive_card(p22.Card(value=item))
     assert len(tested.cards) == 5
     assert tested.hand == []
+    tested.receive_card(p22.Card(value=12))
 
 def test_deck():
     """ test the Deck class - which will hold one deck of 52 cards for poker """
@@ -46,6 +98,7 @@ def test_deck():
 
     tested = p22.Deck(True)
     same = p22.Deck()
+    # there might be a chance in a million for the shuffled decks to be the same
     assert tested != same
     assert tested.sort() == same.sort()
 

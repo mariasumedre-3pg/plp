@@ -33,8 +33,8 @@ class Suite(object):
         table = {
             self.HEARTS: '♥',
             self.SPADE: '♠',
-            self.CLUB: '♦',
-            self.DIAMOND: '♣',
+            self.CLUB: '♣',
+            self.DIAMOND: '♦',
         }
         pretty = table[self.name.lower()]
         return pretty #.encode('utf8')
@@ -45,7 +45,7 @@ class Card(object):
     def __init__(self, value=10, color=None):
         """ constructor for the Card class
             expects a value for the Card and a type/color """
-        self._value = value
+        self._value = value if 0 < value < 15 else 1
         self._color = color or Suite.HEARTS
 
     def color(self):
