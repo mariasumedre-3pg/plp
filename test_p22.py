@@ -109,8 +109,8 @@ def test_deck():
     assert len([x for x in tested if x.color() == 'clubs']) == 13
     assert len([x for x in tested if x.color() == 'diamonds']) == 13
 
-def test_hand_alg():
-    """ test the algorithms of the hand """
+def test_hand_alg_pairs():
+    """ test the algorithms of the hand - pairs, one or two"""
     hand1 = p22.PokerHand()
     hand2 = p22.PokerHand()
     assert hand1.cards == []
@@ -160,6 +160,8 @@ def test_hand_alg():
     lower = hand1.compute_value2()
     assert higher > lower
 
+def test_hand_alg_three_of_a_kind():
+    """ test the algorithms of the hand - three of a kind """
     # test three of a kind, reset tested stuff
     hand1 = p22.PokerHand()
     hand2 = p22.PokerHand()
@@ -186,6 +188,8 @@ def test_hand_alg():
     lower = hand2.compute_value2()
     assert higher > lower
 
+def test_hand_alg_straight():
+    """ test the algorithms of the hand - straight """
     # test straight, reset tested stuff
     hand1 = p22.PokerHand()
     hand2 = p22.PokerHand()
@@ -221,6 +225,8 @@ def test_hand_alg():
     lower = hand2.compute_value2()
     assert higher > lower
 
+def test_hand_alg_flush():
+    """ test the algorithms of the hand - flush """
     # test flush
     hand1 = p22.PokerHand()
     hand2 = p22.PokerHand()
@@ -261,7 +267,9 @@ def test_hand_alg():
     lower = hand1.compute_value2()
     assert higher > lower
 
-    # full house, here there might be problems?
+def test_hand_alg_full_house():
+    """ test the algorithms of the hand - full house """
+    # full house
     hand1 = p22.PokerHand()
     hand2 = p22.PokerHand()
     hand2.add_card(p22.Card(value=4, color='hearts'))
@@ -277,4 +285,105 @@ def test_hand_alg():
     hand1.add_card(p22.Card(value=4, color='clubs'))
     higher = hand1.compute_value2()
     lower = hand2.compute_value2()
+    assert higher > lower
+
+    # full house with same 3 cards
+    hand1 = p22.PokerHand()
+    hand2 = p22.PokerHand()
+    hand2.add_card(p22.Card(value=5, color='hearts'))
+    hand2.add_card(p22.Card(value=5, color='spades'))
+    hand2.add_card(p22.Card(value=5, color='clubs'))
+    hand2.add_card(p22.Card(value=7, color='hearts'))
+    hand2.add_card(p22.Card(value=7, color='spades'))
+
+    hand1.add_card(p22.Card(value=5, color='hearts'))
+    hand1.add_card(p22.Card(value=5, color='spades'))
+    hand1.add_card(p22.Card(value=5, color='clubs'))
+    hand1.add_card(p22.Card(value=6, color='spades'))
+    hand1.add_card(p22.Card(value=6, color='clubs'))
+    higher = hand2.compute_value2()
+    lower = hand1.compute_value2()
+    assert higher > lower
+
+def test_hand_alg_four_of_a_kind():
+    """ test the algorithms of the hand - four of a kind """
+    # four of a kind vs full house
+    hand2 = p22.PokerHand()
+    hand2.add_card(p22.Card(value=5, color='hearts'))
+    hand2.add_card(p22.Card(value=5, color='spades'))
+    hand2.add_card(p22.Card(value=5, color='clubs'))
+    hand2.add_card(p22.Card(value=7, color='hearts'))
+    hand2.add_card(p22.Card(value=7, color='spades'))
+
+    hand1 = p22.PokerHand()
+    hand1.add_card(p22.Card(value=5, color='hearts'))
+    hand1.add_card(p22.Card(value=5, color='spades'))
+    hand1.add_card(p22.Card(value=5, color='clubs'))
+    hand1.add_card(p22.Card(value=5, color='diamonds'))
+    hand1.add_card(p22.Card(value=6, color='clubs'))
+    higher = hand1.compute_value2()
+    lower = hand2.compute_value2()
+    assert higher > lower
+
+    # two four of a kind
+    hand2 = p22.PokerHand()
+    hand2.add_card(p22.Card(value=7, color='hearts'))
+    hand2.add_card(p22.Card(value=7, color='spades'))
+    hand2.add_card(p22.Card(value=7, color='clubs'))
+    hand2.add_card(p22.Card(value=7, color='diamonds'))
+    hand2.add_card(p22.Card(value=12, color='spades'))
+    higher = hand2.compute_value2()
+    lower = hand1.compute_value2()
+    assert higher > lower
+
+    # two same four of a kind, wins the one with the high card
+    hand1 = p22.PokerHand()
+    hand1.add_card(p22.Card(value=7, color='hearts'))
+    hand1.add_card(p22.Card(value=7, color='spades'))
+    hand1.add_card(p22.Card(value=7, color='clubs'))
+    hand1.add_card(p22.Card(value=7, color='diamonds'))
+    hand1.add_card(p22.Card(value=1, color='clubs'))
+    higher = hand1.compute_value2()
+    lower = hand2.compute_value2()
+    assert higher > lower
+
+def test_hand_alg_straight_flush():
+    """ test the algorithms of the hand - straight flush """
+    hand1 = p22.PokerHand()
+    hand1.add_card(p22.Card(value=7, color='hearts'))
+    hand1.add_card(p22.Card(value=8, color='hearts'))
+    hand1.add_card(p22.Card(value=9, color='hearts'))
+    hand1.add_card(p22.Card(value=10, color='hearts'))
+    hand1.add_card(p22.Card(value=11, color='hearts'))
+
+    hand2 = p22.PokerHand()
+    hand2.add_card(p22.Card(value=8, color='spades'))
+    hand2.add_card(p22.Card(value=9, color='spades'))
+    hand2.add_card(p22.Card(value=10, color='spades'))
+    hand2.add_card(p22.Card(value=11, color='spades'))
+    hand2.add_card(p22.Card(value=12, color='spades'))
+    higher = hand2.compute_value2()
+    lower = hand1.compute_value2()
+    assert higher > lower
+
+    # that which doesn't work: ace does not count as 1
+    hand2 = p22.PokerHand()
+    hand2.add_card(p22.Card(value=1, color='spades'))
+    hand2.add_card(p22.Card(value=2, color='spades'))
+    hand2.add_card(p22.Card(value=3, color='spades'))
+    hand2.add_card(p22.Card(value=4, color='spades'))
+    hand2.add_card(p22.Card(value=5, color='spades'))
+    higher = hand1.compute_value2()
+    lower = hand2.compute_value2()
+    assert higher > lower
+
+    # that which does work: ace does count as 14
+    hand2 = p22.PokerHand()
+    hand2.add_card(p22.Card(value=13, color='spades'))
+    hand2.add_card(p22.Card(value=1, color='spades'))
+    hand2.add_card(p22.Card(value=10, color='spades'))
+    hand2.add_card(p22.Card(value=11, color='spades'))
+    hand2.add_card(p22.Card(value=12, color='spades'))
+    higher = hand2.compute_value2()
+    lower = hand1.compute_value2()
     assert higher > lower

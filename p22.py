@@ -159,7 +159,7 @@ class PokerHand(object):
     #     return repr(self.cards)
 
     def consecutive(self, sorted_cards):
-        """ How many cards in hand are consecutive - for straight and straight flush
+        """ How many cards in hand are consecutive/sequential - for straight and straight flush
             It doesn't recognize yet when an ace could be a placeholder for 1 (ace, two, three) """
         result = 0
         # we want to group the consecutive items, so we trick groupby with the lambda:
@@ -180,8 +180,13 @@ class PokerHand(object):
         """ Group together cards with same value, to be used checking for pairs,
             checking for full house, and for four of a kind """
         result = []
+        # transform list of cards in a list of tuples
         temp = [(x.value(), x.color()) for x in sorted_cards]
-        for val, colors in itertools.groupby(temp, itemgetter(0)):
+        # itemgetter is a function that will get the first item in a list -> [0]
+        # in this case, we are grouping by value, the first element in the tuples in temp
+        #for val, colors in itertools.groupby(temp, itemgetter(0)):
+        # equivalent to ?
+        for val, colors in itertools.groupby(temp, lambda x: x[0]):
             result.append((val, map(itemgetter(1), colors)))
         return result
 
@@ -201,11 +206,12 @@ class PokerHand(object):
             if consec == 5: #if all 5 cards are sequential
                 if flush:
                     # straight flush, starting with first card in sorted list
-                    result = "9" + str(sorted_cards[0].value())
+                    result = "9" + chr(ord('a') + sorted_cards[0].value())
                 else:
                     # straight, starting with first card in sorted list
-                    result = "5" + str(sorted_cards[0].value())
+                    result = "5" + chr(ord('a') + sorted_cards[0].value())
             else: # we might have pairs
+                # group same cards using groupby
                 collection = self.group_same_values(sorted_cards)
                 pairs = [x for x in collection if len(x[1]) == 2]
                 high = [x for x in collection if len(x[1]) == 1]
@@ -214,7 +220,8 @@ class PokerHand(object):
 
                 # this is the high card in case we have nothing (reuse the variable)
                 if high != []:
-                    high = max(high, key=lambda x: x[0])
+                    #high = max(high, key=lambda x: x[0])
+                    high = max(high, key=itemgetter(0))
                     high = "1" + chr(ord('a') + high[0])
                     result = high
                 else:
@@ -231,7 +238,8 @@ class PokerHand(object):
                     if len(pairs) == 1:
                         # in case of full house, the grouping of 3 cards rank higher
                         letter_for_3 = chr(ord('a') + three_of_a_kind[0][0])
-                        # i don't think it can come to this, unless there are more decks in play
+                        # it can come to this in case the three cards are in the community pool,
+                        # then the highest pair wins
                         letter_for_pair = chr(ord('a') + pairs[0][0])
                         result = "7" + letter_for_3 + letter_for_pair
                     else:
