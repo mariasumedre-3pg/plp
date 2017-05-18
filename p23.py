@@ -110,7 +110,27 @@ def time_slow2(threshold=0.0):
 @time_slow(threshold=0.05)
 def myfast():
     """ some function to be decorated """
-    pass
+    print "running myfast"
+
+@time_slow
+def myfast2():
+    """ some function to be decorated """
+    print "running myfast2"
+
+def sleep_sec(value):
+    """ helper for the decorator test -> inner call takes [value] seconds """
+    print "sleeping {0} seconds ...".format(str(value))
+    time.sleep(value)
+    print "wakeup after {0} seconds".format(str(value))
+
+@time_slow(threshold=0.05)
+def func_to_decorate():
+    """ some function to be decorated """
+    print "in func_to_decorate"
+    sleep_sec(0.1)
+    sleep_sec(0.05)
+    sleep_sec(0.02)
+    print "done"
 
 @time_slow2(threshold=0.05)
 def sleep_0_7_sec():
@@ -134,12 +154,8 @@ def test_time_slow_with_threshold():
     result = sleep_0_3_sec()
     assert result is ""
 
-@time_slow
-def myfast2():
-    """ some function to be decorated """
-    pass
-
 def test_time_slow():
     """ test time_slow decorator without a threshold """
     myfast2()
+    func_to_decorate()
     # no assert yet, working on it
