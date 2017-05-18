@@ -2,7 +2,6 @@
     or musings on how ethical and helpful it is to use stackoverflow:
     http://stackoverflow.com/questions/3931627/how-to-build-a-python-decorator-with-optional-parameters """
 
-import timeit
 import cProfile
 import pstats
 import StringIO
@@ -21,7 +20,6 @@ def time_slow(threshold=0.0):
         @wraps(threshold)
         def func_wrapper():
             """ add how much time it took to run the function """
-            #func_name = "{}".format(getattr(threshold, '__name__'))
             profiler = cProfile.Profile()
             profiler.enable()
             threshold()
@@ -30,10 +28,7 @@ def time_slow(threshold=0.0):
             sortby = 'time'
             profiler_stats = pstats.Stats(profiler, stream=sstream).sort_stats(sortby)
             profiler_stats.print_stats()
-            print sstream.getvalue()
-            #seconds = timeit.timeit(stmt=func_name, setup="import p23", number=1)
-            #if seconds >= threshold:
-            #    print "it took {0:.2f} seconds to run {1}".format(seconds, func_name)
+            print sstream.getvalue().strip()
         result = func_wrapper
     else: # if time_slow was "called" with paranthesis and possibly params
         def time_func(func):
@@ -41,9 +36,37 @@ def time_slow(threshold=0.0):
             @wraps(func)
             def func_wrapper():
                 """ add how much time it took to run the function """
-                func_name = "p23.{}".format(getattr(func, '__name__'))
-                seconds = timeit.timeit(stmt=func_name, setup="import p23", number=1)
-                print "it took {0:.2f} seconds to run {1}".format(seconds, func_name)
+                profiler = cProfile.Profile()
+                profiler.enable()
+                func()
+                profiler.disable()
+                sstream = StringIO.StringIO()
+                sortby = 'time'
+                profiler_stats = pstats.Stats(profiler, stream=sstream).sort_stats(sortby)
+                profiler_stats.print_stats()
+                data = sstream.getvalue().strip()
+                lines = data.splitlines()
+                # check if data is as expected -> no exceptions?
+                lines_no = len(lines)
+                keyw1 = "function calls"
+                keyw2 = " seconds"
+                keyw3 = "percall"
+                if lines_no > 5 and keyw1 in lines[0] and keyw2 in lines[0] and keyw3 in lines[4]:
+                    print lines[0]
+                    header = lines[4].strip().split(' ')
+                    header = [key for key in header if key != '']
+                    print ' '.join(header)
+                    rows = []
+                    for row in lines[5:]:
+                        values = row.strip().split(' ')
+                        values = [element for element in values if element != '']
+                        rows.append(values)
+                    for row in rows:
+                        # check percall time in row, it whould be the third element
+                        if len(row) > 5:
+                            seconds = float(row[2])
+                            if seconds >= threshold:
+                                print ' '.join(row)
             return func_wrapper
         result = time_func
     return result
@@ -94,12 +117,14 @@ def sleep_0_7_sec():
     """ some function to be decorated """
     time.sleep(0.7)
     print "done"
+    return "done"
 
 @time_slow2(threshold=0.4)
 def sleep_0_3_sec():
     """ some function to be decorated """
     time.sleep(0.3)
     print "done"
+    return "done"
 
 def test_time_slow_with_threshold():
     """ test time_slow decorator with a threshold """
