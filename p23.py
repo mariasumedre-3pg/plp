@@ -8,6 +8,7 @@ import StringIO
 import time
 from functools import wraps
 
+
 def time_slow(threshold=0.0):
     """ decorator that takes an optional parameter
         so how decorators work:
@@ -79,33 +80,33 @@ def my_timer(func):
     total = float(end) - float(start)
     return total
 
-def time_slow2(threshold=0.0):
-    """ decorator that takes an optional parameter """
-    if callable(threshold):
-        @wraps(threshold)
-        def func_wrapper():
-            """ add how much time it took to run the function """
-            func_name = "{0}()".format(getattr(threshold, '__name__'))
-            seconds = my_timer(threshold)
+def give_me_a_func_wrapper(func, default_threshold=0.0):
+    """ since i use func wrapper thing twice, maybe i can write a function for it """
+    @wraps(func)
+    def func_wrapper():
+        """ add how much time it took to run the function """
+        func_name = "{0}()".format(getattr(func, '__name__'))
+        seconds = my_timer(func)
+        result = ""
+        if float(seconds) >= float(default_threshold): # make sure both are float?
             result = "it took {0:.2f} seconds to run {1}".format(seconds, func_name)
             print result
-            return result
-        return func_wrapper
+        return result
+    return func_wrapper
+
+def time_slow2(threshold=0.0):
+    """ decorator that takes an optional parameter """
+    result = None
+    if callable(threshold):
+        #threshold = wraps(threshold)
+        result = give_me_a_func_wrapper(threshold, 0.0)
     else:
         def time_func(func):
             """ function decorator test """
-            @wraps(func)
-            def func_wrapper():
-                """ add how much time it took to run the function """
-                func_name = "{0}()".format(getattr(func, '__name__'))
-                seconds = my_timer(func)
-                result = ""
-                if float(seconds) >= float(threshold): # make sure both are float?
-                    result = "it took {0:.2f} seconds to run {1}".format(seconds, func_name)
-                    print result
-                return result
-            return func_wrapper
-    return time_func
+            #func = wraps(func)
+            return give_me_a_func_wrapper(func, threshold)
+        result = time_func
+    return result
 
 @time_slow(threshold=0.05)
 def myfast():
