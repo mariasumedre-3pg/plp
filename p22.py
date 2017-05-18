@@ -187,7 +187,7 @@ class PokerHand(object):
         #for val, colors in itertools.groupby(temp, itemgetter(0)):
         # equivalent to ?
         for val, colors in itertools.groupby(temp, lambda x: x[0]):
-            result.append((val, map(itemgetter(1), colors)))
+            result.append((val, [elem[1] for elem in colors]))  #filter(map(itemgetter(1), colors)))
         return result
 
     def compute_value2(self):

@@ -6,10 +6,50 @@ import cProfile
 import pstats
 import StringIO
 import time
+import re
 from functools import wraps
 
+def parse_profiler_output(data, threshold):
+    """ function to parse the Profiler string output to show only functions
+        that have ran for a time over the threshold """
+    lines = data.splitlines()
+    # check if data is as expected -> no exceptions?
+    lines_no = len(lines)
+    keyw1 = "function calls"
+    keyw2 = " seconds"
+    keyw3 = "percall"
 
-def time_slow(threshold=0.0):
+    if lines_no > 5 and keyw1 in lines[0] and keyw2 in lines[0] and keyw3 in lines[4]:
+        print lines[0]
+        line_re = re.compile(
+            r'\s+(?P<ncalls>\d+)'
+            r'\s+(?P<tottime>[\d\.]+)'
+            r'\s+(?P<percall>[\d\.]+)'
+            r'\s+(?P<cumtime>[\d\.]+)'
+            r'\s+(?P<percall2>[\d\.]+)'
+        )
+        rows = []
+        for row in lines[5:]:
+            matcher = line_re.match(row)
+            line_data = matcher.groupdict() if matcher else {}
+            if line_data and float(line_data["percall"]) > threshold:
+                rows.append(matcher.group(0))
+        print " ".join([row for row in rows])
+
+def profile_a_func(func):
+    """ use a cProfile on a function passed as a param and return the string output """
+    profiler = cProfile.Profile()
+    profiler.enable()
+    func()
+    profiler.disable()
+    sstream = StringIO.StringIO()
+    sortby = 'time'
+    profiler_stats = pstats.Stats(profiler, stream=sstream).sort_stats(sortby)
+    profiler_stats.print_stats()
+    output = sstream.getvalue().strip()
+    return output
+
+def time_slow(threshold):
     """ decorator that takes an optional parameter
         so how decorators work:
         - threshold might be the function that is getting decorated
@@ -21,15 +61,8 @@ def time_slow(threshold=0.0):
         @wraps(threshold)
         def func_wrapper():
             """ add how much time it took to run the function """
-            profiler = cProfile.Profile()
-            profiler.enable()
-            threshold()
-            profiler.disable()
-            sstream = StringIO.StringIO()
-            sortby = 'time'
-            profiler_stats = pstats.Stats(profiler, stream=sstream).sort_stats(sortby)
-            profiler_stats.print_stats()
-            print sstream.getvalue().strip()
+            output = profile_a_func(threshold)
+            print output
         result = func_wrapper
     else: # if time_slow was "called" with paranthesis and possibly params
         def time_func(func):
@@ -37,37 +70,8 @@ def time_slow(threshold=0.0):
             @wraps(func)
             def func_wrapper():
                 """ add how much time it took to run the function """
-                profiler = cProfile.Profile()
-                profiler.enable()
-                func()
-                profiler.disable()
-                sstream = StringIO.StringIO()
-                sortby = 'time'
-                profiler_stats = pstats.Stats(profiler, stream=sstream).sort_stats(sortby)
-                profiler_stats.print_stats()
-                data = sstream.getvalue().strip()
-                lines = data.splitlines()
-                # check if data is as expected -> no exceptions?
-                lines_no = len(lines)
-                keyw1 = "function calls"
-                keyw2 = " seconds"
-                keyw3 = "percall"
-                if lines_no > 5 and keyw1 in lines[0] and keyw2 in lines[0] and keyw3 in lines[4]:
-                    print lines[0]
-                    header = lines[4].strip().split(' ')
-                    header = [key for key in header if key != '']
-                    print ' '.join(header)
-                    rows = []
-                    for row in lines[5:]:
-                        values = row.strip().split(' ')
-                        values = [element for element in values if element != '']
-                        rows.append(values)
-                    for row in rows:
-                        # check percall time in row, it whould be the third element
-                        if len(row) > 5:
-                            seconds = float(row[2])
-                            if seconds >= threshold:
-                                print ' '.join(row)
+                data = profile_a_func(func)
+                parse_profiler_output(data, threshold)
             return func_wrapper
         result = time_func
     return result
@@ -98,12 +102,10 @@ def time_slow2(threshold=0.0):
     """ decorator that takes an optional parameter """
     result = None
     if callable(threshold):
-        #threshold = wraps(threshold)
         result = give_me_a_func_wrapper(threshold, 0.0)
     else:
         def time_func(func):
             """ function decorator test """
-            #func = wraps(func)
             return give_me_a_func_wrapper(func, threshold)
         result = time_func
     return result
@@ -153,7 +155,7 @@ def test_time_slow_with_threshold():
     result = sleep_0_7_sec()
     assert "it took 0.70 seconds" in result
     result = sleep_0_3_sec()
-    assert result is ""
+    assert result == ""
 
 def test_time_slow():
     """ test time_slow decorator without a threshold """
