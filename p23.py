@@ -27,6 +27,7 @@ def parse_profiler_output(data, threshold):
             r'\s+(?P<percall>[\d\.]+)'
             r'\s+(?P<cumtime>[\d\.]+)'
             r'\s+(?P<percall2>[\d\.]+)'
+            r'\s+\{(?P<funcname>\S+)\}'
         )
         rows = []
         for row in lines[5:]:
