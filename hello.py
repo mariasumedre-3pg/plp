@@ -1,5 +1,7 @@
 ''' a python script to just try things out '''
 
+SOME_GLOBAL_VARIABLE = 10
+
 def cheeseshop(kind, *arguments, **keywords):
     '''example from docs.python.org with the sorted dictionary keys
 
@@ -77,3 +79,9 @@ def flatten2(list_a, list_b, max_depth):
         max_depth - max level of list nested-ness '''
     my_flatten2(list_a, max_depth)
     my_flatten2(list_b, max_depth)
+
+def test():
+    ''' test stuff about the global variables '''
+    global SOME_GLOBAL_VARIABLE
+    SOME_GLOBAL_VARIABLE += 1
+    print SOME_GLOBAL_VARIABLE
