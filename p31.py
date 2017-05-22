@@ -7,40 +7,33 @@
     Output: b, a, z, c, zz
     """
 
-def test((node_label, left_node_tuple, right_node_tuple)):
+def pre_nodes((node_label, left_node_tuple, right_node_tuple)):
     """ generator function thing"""
-    #import pdb
-    #pdb.set_trace()
-    #print "yielding node_label {0}".format(node_label)
     yield node_label
 
-    #pdb.set_trace()
     if left_node_tuple is not None:
-        left = test(left_node_tuple)
-        val = next(left)
-        #print "yielding left val {0}".format(val)
-        yield val
-        while val is not None:
-            val = next(left)
-            #print "yielding left val (while) {0}".format(val)
-            yield val
+        value = True # assume there is a value in the generator (do...while?)
+        left = pre_nodes(left_node_tuple)
+        while value:
+            value = next(left)
+            if value:
+                yield value
 
-    #pdb.set_trace()
     if right_node_tuple is not None:
-        right = test(right_node_tuple)
-        val = next(right)
-        #print "yielding right val {0}".format(val)
-        yield val
-        while val is not None:
-            val = next(right)
-            #print "yielding right val (while) {0}".format(val)
-            yield val
-
+        value = 1 # assume there is a value in the generator
+        right = pre_nodes(right_node_tuple)
+        while value:
+            value = next(right)
+            if value:
+                yield value
     yield None
 
 
-def use_test(param):
+def use_pre_nodes(param):
     """ use the generator that iterates throught the tree """
-    for element in test(param):
-        if element:
-            print "{0},".format(element),
+    #for element in pre_nodes(param):
+    #    if element:
+    #        print "{0}, ".format(element),
+    # this might defeat the purpose of a generator
+    a_list = [element for element in pre_nodes(param) if element]
+    print ', '.join(a_list)
