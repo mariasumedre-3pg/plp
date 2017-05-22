@@ -8,7 +8,9 @@
     """
 
 def help_nodes(some_tuple):
-    """ see if we can make a generator thing to not duplicate code """
+    """ A generator helper for the pre_nodes generator.
+        It will call pre_nodes (there is recursion) to return a generator
+        and will yield the values from the generator, if different than None """
     value = True # assume there is a value in the generator (do...while?)
     side = pre_nodes(some_tuple)
     while value:
@@ -18,7 +20,8 @@ def help_nodes(some_tuple):
 
 
 def pre_nodes((node_label, left_node_tuple, right_node_tuple)):
-    """ generator function thing to return the nodes in preorder"""
+    """ Generator function thing to return the nodes of a tuple tree in preorder
+        It returns a node at a time, uses generator help_nodes to parse left and right trees """
     yield node_label
 
     if left_node_tuple is not None:
@@ -32,7 +35,7 @@ def pre_nodes((node_label, left_node_tuple, right_node_tuple)):
 
 
 def use_pre_nodes(param):
-    """ use the generator that iterates throught the tree """
+    """ use the generator that iterates through the tree to print the nodes """
     #for element in pre_nodes(param):
     #    if element:
     #        print "{0}, ".format(element),
