@@ -9,39 +9,71 @@ from itertools import chain, ifilter, imap, permutations
 
 def isubsets(given_set):
     """ iterable that returns all the subsets of a given set """
-    size = len(given_set) # this will be used with range for the permutations' length
+    # size = len(given_set) # this will be used with range for the permutations' length
     # how it's done:
     # 1. make a list(?) of itertools.permutations of length from 0 to len(given_set) - 1
     # 2. pass the list unpacked to itertools.chain
     # 2. itertools.ifilter from that list the permutations that are not sorted
     #    e.g.: we want set([1,2]) but not also set([2, 1])
     # 3. the itertools.permutations gives us tuples, we want sets (results are sub-sets)
-    result = imap(set,
-                  ifilter(lambda x: sorted(x) == list(x),
-                          chain(*[permutations(given_set, index) for index in range(size)])))
-    return result
+#    result = imap(set,
+#                  ifilter(lambda x: sorted(x) == list(x),
+#                          chain.from_iterable(permutations(given_set, index) for index in range(size + 1))))
+    all_results = chain.from_iterable(
+        permutations(given_set, index)
+        for index, _ in enumerate(given_set, 1)
+    )
+    results = chain(
+        [set([])],
+        (set(col) 
+        for col in all_results
+        if sorted(col) == list(col))
+    )
+    return results
+
+
+def subsets(input_set, results=None):
+    'Trololo'
+    results = results or []
+    if input_set not in results:
+        yield input_set
+        results.append(input_set)
+    for elem in input_set:
+        for sub in subsets(input_set ^ {elem}, results):
+            yield sub
+        # yield elem
 
 
 def gsubsets(given_set):
     """ generator that returns all the subsets of a given set """
     set_size = len(given_set)
     # we will run itertools.permutations on given_set with a size for
-    # the resulting tuples (from 0 to len(given_set)-1)
-    for psize in range(set_size):
+    # the resulting tuples (from 0 to len(given_set))
+    for psize in range(set_size + 1):
         permutation = permutations(given_set, psize)
         # permutation holds all the permutations of a psize size
         # for each of it, we verify if it's sorted: we want set([1,2]) but not also set([2, 1])
         # if true, then we yield the set of that tuple
         for item in permutation:
-            # sorted return a list, while item is a tuple
+            # sorted returns a list, while item is a tuple
             if sorted(item) == list(item):
                 yield set(item)
 
 
 # to test with sets of numbers
-SUBSET_LIST = [set([1, 2]), set([1, 3]), set([2, 3]), set([1]), set([2]), set([3]), set([])]
+SUBSET_LIST = [
+    set([1, 2, 3]),
+    set([1, 2]),
+    set([1, 3]),
+    set([2, 3]),
+    set([1]),
+    set([2]),
+    set([3]),
+    set([])
+]
 # to test with sets of strings
-SUBSET_LIST2 = [set(['a', 'b']),
+SUBSET_LIST2 = [set(['a', 'b', 'c']),
+                set(['a', 'b']),
                 set(['a', 'c']),
                 set(['b', 'c']),
                 set(['a']),
@@ -87,11 +119,13 @@ def test_subsets_empty():
     to_iterate = gsubsets(argument)
     for item in to_iterate:
         assert item == set()
-
-    argument = set([()])
+    # tuple = 'asdf'
+    # object = 'sdf'
+    argument = {tuple()}
     to_iterate = isubsets(argument)
-    for item in to_iterate:
-        assert item == set([])
+    assert [item for item in to_iterate] == [{tuple()}]
+    #for item in to_iterate:
+    #    assert item == set([tuple()])
 
     to_iterate = gsubsets(argument)
     for item in to_iterate:
