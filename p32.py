@@ -12,13 +12,13 @@ def isubsets(given_set):
     size = len(given_set) # this will be used with range for the permutations' length
     # how it's done:
     # 1. make a list(?) of itertools.permutations of length from 0 to len(given_set) - 1
-    # 2. pass the list to itertools.chain
+    # 2. pass the list unpacked to itertools.chain
     # 2. itertools.ifilter from that list the permutations that are not sorted
     #    e.g.: we want set([1,2]) but not also set([2, 1])
     # 3. the itertools.permutations gives us tuples, we want sets (results are sub-sets)
     result = imap(set,
                   ifilter(lambda x: sorted(x) == list(x),
-                          chain(permutations(given_set, index) for index in range(size))))
+                          chain(*[permutations(given_set, index) for index in range(size)])))
     return result
 
 
@@ -36,8 +36,6 @@ def gsubsets(given_set):
             # sorted return a list, while item is a tuple
             if sorted(item) == list(item):
                 yield set(item)
-
-    yield set([])
 
 
 # to test with sets of numbers
@@ -111,3 +109,10 @@ def test_subsets_chars():
     to_iterate = gsubsets(argument)
     for item in to_iterate:
         assert item in SUBSET_LIST2
+
+def test_same_output():
+    """ check if gsubsets and isubsets return the same thing """
+    argument = set([1, 2, 3])
+    list_isubsets = [item for item in isubsets(argument)]
+    list_gsubsets = [item for item in gsubsets(argument)]
+    assert list_gsubsets == list_isubsets
