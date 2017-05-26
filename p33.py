@@ -1,41 +1,69 @@
 """ Python script to implement the third problem of the third phase of Python Learning Program """
 
+class SingletonMetaClass(type):
+    'from internet'
+    def __init__(cls, name, bases, dictionary):
+        super(SingletonMetaClass, cls)\
+          .__init__(name, bases, dictionary)
+        original_new = cls.__new__
+        def my_new(cls, *args, **kwds):
+            'new returning same instance'
+            if cls.instance is None:
+                cls.instance = \
+                  original_new(cls, *args, **kwds)
+            return cls.instance
+        cls.instance = None
+        cls.__new__ = staticmethod(my_new)
 
 class SingletonMeta(type):
     """ Metaclass to try enforcing the singleton """
+    #remember here the instances
     registry = {}
+    #remember here the old classes, in case we need another instance
     registry_old = {}
 
     @classmethod
     def get_instance(mcs, key, *args, **kwds):
-        "return instance and also "
+        "simply return instance, but arguments seem important"
         print "use custom constructor for", key
-        mcs.registry[key].__init__(*args, **kwds)
+        # this now does automagically happen
+        #mcs.registry[key].__init__(*args, **kwds)
         return mcs.registry[key]
 
-    def __new__(mcs, name, bases, dictionary):
-        print 'new:', mcs, name, bases
-        dictionary['__name__'] = name
-        new_class = super(SingletonMeta, mcs).__new__(mcs, name, bases, dictionary)
-
+    @classmethod
+    def build_an_instance(mcs, bases, new_class):
+        """ build an instance of new_class, making sure that if one of it's bases
+            was created by SingletonMeta as well, then it has an old registry which
+            can be used to build us a new instance """
         instance = None
         for base in bases:
             if hasattr(base, '__metaclass__') and base.__metaclass__ == SingletonMeta:
-                instance = mcs.registry_old[base.__name__].__new__(new_class)
+                instance = mcs.registry_old[base.__name__](new_class)
                 print "instance created with old base", base
                 break
         if instance is None:
             print "instance created with base", bases[0]
             instance = bases[0].__new__(new_class)
+        return instance
 
+    def __new__(mcs, name, bases, dictionary):
+        print 'new:', mcs, name, bases
+        # add a __name__ attribute to the class, maybe this exists under another name?
+        dictionary['__name__'] = name
+        # create the class definition, this will be stored in registry_old in case
+        # instances of the class are needed
+        new_class = super(SingletonMeta, mcs).__new__(mcs, name, bases, dictionary)
+
+        #build the instance
+        instance = mcs.build_an_instance(bases, new_class)
+        #store the instance and the original new_class
         mcs.registry[name] = instance
-        mcs.registry_old[name] = new_class
-
-        dictionary['__new__'] = lambda self, *args, **kwds: mcs.get_instance(name, *args, **kwds)
-
-        singleton_class = super(SingletonMeta, mcs).__new__(mcs, name, bases, dictionary)
-
-        return singleton_class
+        mcs.registry_old[name] = new_class.__new__
+        #update dictionary with new __new__ method which will apply also __init__
+        #dictionary['__new__'] = lambda self, *args, **kwds: mcs.get_instance(name, *args, **kwds)
+        new_class.__new__ = staticmethod(
+            lambda self, *args, **kwds: mcs.get_instance(name, *args, **kwds))
+        return new_class
 
 
 class SomeClass(object):
