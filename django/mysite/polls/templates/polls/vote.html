@@ -1,0 +1,9 @@
+{% if choice and question %}
+    <p>
+        Vote '{{ choice.choice_text }}' registered on question:"
+        <a href="{% url 'polls:detail' question.id %}">'{{ question.question_text }}'</a>
+    </p>
+{% else %}
+    <p>This choice or question (or both?) doesn't exist!</p>
+{% endif %}
+<p>Back to <a href="{% url 'polls:index' %}">index</a></p>
