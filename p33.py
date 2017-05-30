@@ -1,19 +1,34 @@
 """ Python script to implement the third problem of the third phase of Python Learning Program """
 
+import inspect
+
+class Trololo(type):
+    def __new__(cls, name, bases, dictionary):
+        def mynew(cls, name, bases, dictionary):
+            super()
+        return super(Trololo, cls).__new__(cls, name, bases, dictionary)
+
+
 class SingletonMetaClass(type):
     'from internet'
+
+    # def __new__(cls, name, bases, dictionary):
+    #     print cls, '__new__ called'
+    #     return super(SingletonMetaClass, cls).__new__(cls, name, bases, dictionary)
+
     def __init__(cls, name, bases, dictionary):
-        super(SingletonMetaClass, cls)\
-          .__init__(name, bases, dictionary)
+        print cls, '__init__ called'
+        super(SingletonMetaClass, cls).__init__(name, bases, dictionary)
         original_new = cls.__new__
-        def my_new(cls, *args, **kwds):
+        def my_new(cls, *args, **kwargs):
             'new returning same instance'
-            if cls.instance is None:
-                cls.instance = \
-                  original_new(cls, *args, **kwds)
+            print '{} {} {} __new__ called'.format(cls, args, kwargs)
+            if not hasattr(cls, 'instance'):
+                cls.instance = original_new(cls, *args, **kwargs)
             return cls.instance
         cls.instance = None
         cls.__new__ = staticmethod(my_new)
+
 
 class SingletonMeta(type):
     """ Metaclass to try enforcing the singleton """
@@ -46,10 +61,28 @@ class SingletonMeta(type):
             instance = bases[0].__new__(new_class)
         return instance
 
+    @classmethod
+    def build_an_instance2(mcs, bases, new_class):
+        """ build an instance of new_class, making sure that if one of it's bases
+            was created by SingletonMeta as well, then it has an old registry which
+            can be used to build us a new instance """
+        instance = None
+        for base in bases:
+            if hasattr(base, '__metaclass__') and base.__metaclass__ == SingletonMeta:
+                base_list = inspect.getmro(base)
+                #instance = mcs.registry_old[base.__name__](new_class)
+                #print "instance created with old base", base
+                break
+        if instance is None:
+            print "instance created with base", bases[0]
+            instance = bases[0].__new__(new_class)
+        return instance
+
     def __new__(mcs, name, bases, dictionary):
         print 'new:', mcs, name, bases
         # add a __name__ attribute to the class, maybe this exists under another name?
         dictionary['__name__'] = name
+
         # create the class definition, this will be stored in registry_old in case
         # instances of the class are needed
         new_class = super(SingletonMeta, mcs).__new__(mcs, name, bases, dictionary)
@@ -66,31 +99,56 @@ class SingletonMeta(type):
         return new_class
 
 
+class Example(object):
+    __metaclass__ = SingletonMeta
+
+    def __new__(cls, *args, **kwargs):
+        print 'Example __new__', cls, args, kwargs
+        return super(Example, cls).__new__(cls, *args, **kwargs)
+
+
+class SubExample(Example):
+    pass
+
+
 class SomeClass(object):
     """ some class to that should be a singleton """
-    __metaclass__ = SingletonMeta
+    __metaclass__ = SingletonMetaClass
+
     def __init__(self, x=None):
         """ initializes a integer x with 0, if singleton then only once(?) """
         if x is not None:
             self.x = x
 
+
 class Foo(SomeClass):
     "test subclasses singletons stuff"
     def __init__(self, argument):
         "test when init is called"
+        print 'Foo __init__ called'
         SomeClass.__init__(self, 0)
         print "I am Foo with argument:", argument, self.x
 
+
 class Bar(SomeClass):
-    "test subclasses singletons stuff"
+    "test subclasses sngletons stuff"
     def __init__(self):
         "test when init is called"
         SomeClass.__init__(self, 0)
         print "I am Bar:", self.x
 
+
+class SecondFoo(Foo):
+    "test seconds subclasses singletons stuff"
+    def __init__(self, *args, **kwargs):
+        "test when init is called"
+        Foo.__init__(self, 'test')
+        print "I am SecondFoo:", self.x
+
+
 class OtherClass(object):
     """ some other class that should be a singleton """
-    __metaclass__ = SingletonMeta
+    __metaclass__ = SingletonMetaClass
     def __init__(self):
         """ print a message instead of initializing members
             so it is clear how many times this is actually called """
@@ -139,3 +197,17 @@ def test_subclass():
     assert instance1 is not instance2
     instance1.x = -3
     assert instance2.x == 0
+
+def test_subclass2():
+    """ test another subclass of the singleton """
+    instance1 = SecondFoo()
+    assert instance1 == SecondFoo()
+    assert instance1 is SecondFoo()
+    assert instance1.x == 0
+
+    instance2 = Foo('test')
+    assert instance1 is not instance2
+    assert instance1 != instance2
+
+    instance1.x = -3
+    assert instance1.x == -3

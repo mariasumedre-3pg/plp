@@ -62,11 +62,11 @@ class QuestionViewTests(TestCase):
         """
         If there is a question in the far past, then that question shall be displayed.
         """
-        create_question("Test an old question?", -3)
+        question = create_question("Test an old question?", -3)
         response = self.client.get(reverse('polls:index'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Test an old question?")
-        self.assertQuerysetEqual(response.context['latest_questions'], ['<Question: Test an old question?>'])
+        self.assertQuerysetEqual(response.context['latest_questions'], [repr(question)])
 
     def test_index_with_a_future_question(self):
         """
@@ -84,7 +84,7 @@ class QuestionViewTests(TestCase):
         Even if both past and future questions exist, only past questions
         should be displayed
         """
-        create_question(question_text="Past question.", days=-30)
+        question = create_question(question_text="Past question.", days=-30)
         create_question(question_text="Future question.", days=30)
         response = self.client.get(reverse('polls:index'))
         self.assertEqual(response.status_code, 200)
@@ -92,18 +92,18 @@ class QuestionViewTests(TestCase):
         self.assertNotContains(response, "Future question.")
         self.assertQuerysetEqual(
             response.context['latest_questions'],
-            ['<Question: Past question.>']
+            [repr(question)]
         )
 
     def test_index_with_two_past_questions(self):
         """
         The questions index page may display multiple questions.
         """
-        create_question(question_text="Past question 1.", days=-5)
-        create_question(question_text="Past question 2.", days=-7)
+        question1 = create_question(question_text="Past question 1.", days=-5)
+        question2 = create_question(question_text="Past question 2.", days=-7)
         response = self.client.get(reverse('polls:index'))
         self.assertEqual(response.status_code, 200)
         self.assertQuerysetEqual(
             response.context['latest_questions'],
-            ['<Question: Past question 1.>', '<Question: Past question 2.>']
+            [repr(question1), repr(question2)]
         )

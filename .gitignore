@@ -1,3 +1,4 @@
 *.pyc
 .vscode/.ropeproject/*
+django/.vscode/.ropeproject/*
 *.sqlite3
