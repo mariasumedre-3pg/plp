@@ -10,6 +10,11 @@ import faker
 
 from django.utils import text
 
+def clean(obj):
+    ''' copied clean method from Poll, as model methods don't work here '''
+    today = timezone.now()
+    obj.slug = text.slugify(obj.name + today.strftime('-%d-%B-%Y'))
+
 def help_create_a_question(question_class, question_text, func):
     ''' utility to create a question with
         provided text using a func from Faker '''
@@ -19,17 +24,15 @@ def help_create_a_question(question_class, question_text, func):
         question.choice_set.create(choice_text=func())
     return question
 
-def help_create_a_poll(question_class, poll_class, dictionary, poll_name):
+def help_create_a_poll(Question, Poll, dictionary, poll_name):
     ''' utility to create a poll with
         provided questions and Faker functions
         in the dictionary '''
     print "creating poll %s" % poll_name
-    poll = poll_class.objects.create(name=poll_name)
-    today = timezone.now()
-    poll.slug = text.slugify(poll_name + today.strftime('-%d-%B-%Y'))
-    poll.clean()
+    poll = Poll.objects.create(name=poll_name)
+    clean(poll)
     poll.questions.add(*[
-        help_create_a_question(question_class, question_text, dictionary[question_text])
+        help_create_a_question(Question, question_text, dictionary[question_text])
         for question_text in dictionary.keys()
     ])
     poll.save()
