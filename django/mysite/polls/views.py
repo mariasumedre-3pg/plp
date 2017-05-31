@@ -80,6 +80,6 @@ def vote(request, pk):
         for selected_choice in choices:
             selected_choice.votes = F('votes') + 1
             selected_choice.save()
-        result = HttpResponseRedirect(reverse('polls:results', args=(poll.pk,)))
+        result = HttpResponseRedirect(reverse('polls:results', args=(poll.slug,)))
 
     return result
