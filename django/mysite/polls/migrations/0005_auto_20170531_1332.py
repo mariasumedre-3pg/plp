@@ -5,10 +5,10 @@
 
 from __future__ import unicode_literals
 from django.utils import timezone
+from django.utils import text
 from django.db import migrations
 import faker
 
-from django.utils import text
 
 def clean(obj):
     ''' copied clean method from Poll, as model methods don't work here '''
@@ -17,6 +17,11 @@ def clean(obj):
     # but without the minutes, meaning that if you make 2 polls with similar names
     # then there will be an error
     obj.slug = text.slugify(obj.name + today.strftime('-%d-%B-%Y'))
+
+def slugify(name):
+    ''' copied clean method from Poll, as model methods don't work here '''
+    today = timezone.now()
+    return text.slugify(name + today.strftime('-%d-%B-%Y'))
 
 def help_create_a_question(question_class, question_text, func):
     ''' utility to create a question with
@@ -33,8 +38,8 @@ def help_create_a_poll(question_class, poll_class, dictionary, poll_name):
         provided questions and Faker functions
         in the dictionary '''
     print "creating poll %s" % poll_name
-    poll = poll_class.objects.create(name=poll_name)
-    clean(poll) # add the slug
+    poll = poll_class.objects.create(name=poll_name, slug=slugify(poll_name))
+    #clean(poll) # add the slug
     # questions are created with a simple helper function, in a list comprehension
     # which is then unpacked
     poll.questions.add(*[

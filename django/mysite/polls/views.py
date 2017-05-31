@@ -48,6 +48,7 @@ class ResultsView(generic.DetailView):
     slug_url_kwarg = 'slug'
     query_pk_and_slug = True
 
+
 #keep the old version of the function to remember what was replaced with the class
 def results(request, question_id):
     """ function that does the same thing as class resultsview
