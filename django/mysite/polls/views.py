@@ -22,7 +22,7 @@ class IndexView(generic.ListView):
     context_object_name = 'latest_polls'
 
     def get_queryset(self):
-        return Poll.objects.all()[:5]
+        return Poll.objects.all()
 
     # def get_queryset(self):
     #     'returns last (at most) 5 questions asked'
@@ -35,12 +35,18 @@ class DetailView(generic.DetailView):
     """ class sub-classing detailview helping us display a question """
     model = Poll
     template_name = 'polls/detail.html'
+    # the name of the argument for slug is 'slug'
+    slug_url_kwarg = 'slug'
+    # we are sending a slug, not necessarily a pk
+    query_pk_and_slug = True
 
 
 class ResultsView(generic.DetailView):
     """ class sub-classing detailview helping us display votes of a question """
     model = Poll
     template_name = 'polls/results.html'
+    slug_url_kwarg = 'slug'
+    query_pk_and_slug = True
 
 #keep the old version of the function to remember what was replaced with the class
 def results(request, question_id):

@@ -2,7 +2,7 @@
 {% if latest_polls %}
     <ul>
     {% for poll in latest_polls %}
-        <li><a href="{% url 'polls:detail' poll.pk %}">{{ poll.name }}</a></li>
+        <li><a href="{% url 'polls:detail' poll.slug %}">{{ poll.name }}</a></li>
     {% endfor %}
     </ul>
 {% else %}

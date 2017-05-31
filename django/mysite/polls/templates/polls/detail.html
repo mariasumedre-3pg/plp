@@ -3,7 +3,7 @@
     {% if error_message %}
         <p><strong> {{ error_message }}</strong></p>
     {% endif %}
-    <form action="{% url 'polls:vote' poll.pk %}" method="post">
+    <form action="{% url 'polls:vote' poll.slug %}" method="post">
         {% csrf_token %}
         {% for question in poll.questions.all %}
             <h2>Question: {{ question.question_text }}</h2>
@@ -14,7 +14,7 @@
         {% endfor %}
     <input type="submit" value="Vote" />
     </form>
-    <p>Check <a href="{% url 'polls:results' poll.pk %}">results</a></p>
+    <p>Check <a href="{% url 'polls:results' poll.slug %}">results</a></p>
 {% else %}
     <p>This question doesn't exist!</p>
 {% endif %}

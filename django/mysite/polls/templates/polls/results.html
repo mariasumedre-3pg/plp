@@ -8,7 +8,7 @@
         {% endfor %}
         </ul>
     {% endfor %}
-    <a href="{% url 'polls:detail' poll.pk %}">Vote again?</a>
+    <a href="{% url 'polls:detail' poll.slug %}">Vote again?</a>
 {% else %}
     <p>This poll doesn't exist!</p>
 {% endif %}
