@@ -47,6 +47,9 @@ class Poll(models.Model):
     questions = models.ManyToManyField(Question, blank=True)
 
     def clean(self):
+        # add in the slug - future url also the date of the poll
+        # but without the minutes, meaning that if you make 2 polls with similar names
+        # then there will be an error
         today = timezone.now()
         self.slug = self.slug or text.slugify(self.name + today.strftime('-%d-%B-%Y'))
 

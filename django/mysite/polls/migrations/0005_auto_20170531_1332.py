@@ -13,39 +13,40 @@ from django.utils import text
 def clean(obj):
     ''' copied clean method from Poll, as model methods don't work here '''
     today = timezone.now()
+    # add in the slug - future url also the date of the poll
+    # but without the minutes, meaning that if you make 2 polls with similar names
+    # then there will be an error
     obj.slug = text.slugify(obj.name + today.strftime('-%d-%B-%Y'))
 
 def help_create_a_question(question_class, question_text, func):
     ''' utility to create a question with
-        provided text using a func from Faker '''
+        provided text using a func from Faker
+        called 5 times (5 choices) '''
     question = question_class.objects.create(question_text=question_text,
                                              pub_date=timezone.now())
     for _ in range(5):
         question.choice_set.create(choice_text=func())
     return question
 
-def help_create_a_poll(Question, Poll, dictionary, poll_name):
+def help_create_a_poll(question_class, poll_class, dictionary, poll_name):
     ''' utility to create a poll with
         provided questions and Faker functions
         in the dictionary '''
     print "creating poll %s" % poll_name
-    poll = Poll.objects.create(name=poll_name)
-    clean(poll)
+    poll = poll_class.objects.create(name=poll_name)
+    clean(poll) # add the slug
+    # questions are created with a simple helper function, in a list comprehension
+    # which is then unpacked
     poll.questions.add(*[
-        help_create_a_question(Question, question_text, dictionary[question_text])
+        help_create_a_question(question_class, question_text, dictionary[question_text])
         for question_text in dictionary.keys()
     ])
-    poll.save()
+    poll.save() # i found this necessary so the slug is also updated in the db
     return poll
 
-def insert_data(apps, schema_editor):
-    ''' insert 2 polls in the database,
-        polls are created using faker generators '''
-    print "starting migration to insert 2 polls in database ..."
-    poll_class = apps.get_model("polls", "Poll")
-    question_class = apps.get_model("polls", "Question")
-    generator = faker.Faker()
-
+def add_workforce_poll(poll_class, question_class, generator):
+    """ function to add the workforce poll to database using help_create_a_poll
+        it was done to make the insert_data function lighter """
     workforce_poll_dictionary = {
         'What is your name?': generator.name,
         'What is your address?': generator.address,
@@ -57,6 +58,9 @@ def insert_data(apps, schema_editor):
     )
     print "%s was introduced in database ..." % workforce_poll.slug
 
+def add_random_poll(poll_class, question_class, generator):
+    """ function to add the random questions poll to database using help_create_a_poll
+        it was done to make the insert_data function lighter """
     random_poll_dictionary = {
         'When is your birthday?': generator.date,
         'What is your phone number?': generator.phone_number,
@@ -67,6 +71,20 @@ def insert_data(apps, schema_editor):
         question_class, poll_class, random_poll_dictionary, "Random Poll"
     )
     print "%s was introduced in database ..." % random_poll.slug
+
+def insert_data(apps, schema_editor):
+    ''' insert 2 polls in the database,
+        polls are created using faker generators '''
+    print "starting migration to insert 2 polls in database ..."
+    # the models are taken from history in case they were changed <- take old version
+    # as opposed to taking them through from polls.models import Poll, Question
+    # Choice is not needed, it will be used in Question directly
+    poll_class = apps.get_model("polls", "Poll")
+    question_class = apps.get_model("polls", "Question")
+    generator = faker.Faker()
+
+    add_workforce_poll(poll_class, question_class, generator)
+    add_random_poll(poll_class, question_class, generator)
 
 
 def delete_data(apps, schema_editor):
