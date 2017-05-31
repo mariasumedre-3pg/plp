@@ -1,8 +1,8 @@
-<p>Latest Questions:</p>
-{% if latest_questions %}
+<p>Latest Polls:</p>
+{% if latest_polls %}
     <ul>
-    {% for question in latest_questions %}
-        <li><a href="{% url 'polls:detail' question.pk %}">{{ question.question_text }}</a></li>
+    {% for poll in latest_polls %}
+        <li><a href="{% url 'polls:detail' poll.pk %}">{{ poll.name }}</a></li>
     {% endfor %}
     </ul>
 {% else %}

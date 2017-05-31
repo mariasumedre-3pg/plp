@@ -1,12 +1,15 @@
-{% if question %}
-    <h1>Question: {{ question.question_text }}</h1>
-    <ul>
-    {% for choice in question.choice_set.all %}
-        <li>"{{ choice.choice_text }}" has {{ choice.votes }} vote{{ choice.votes|pluralize }}</li>
+{% if poll %}
+    <h1>Poll: {{ poll.name }}</h1>
+    {% for question in poll.questions.all %}
+        <h2>Question: {{ question.question_text }}</h2>
+        <ul>
+        {% for choice in question.choice_set.all %}
+            <li>"{{ choice.choice_text }}" has {{ choice.votes }} vote{{ choice.votes|pluralize }}</li>
+        {% endfor %}
+        </ul>
     {% endfor %}
-    </ul>
-    <a href="{% url 'polls:detail' question.id %}">Vote again?</a>
+    <a href="{% url 'polls:detail' poll.pk %}">Vote again?</a>
 {% else %}
-    <p>This question doesn't exist!</p>
+    <p>This poll doesn't exist!</p>
 {% endif %}
 <p>Back to <a href="{% url 'polls:index' %}">index</a></p>

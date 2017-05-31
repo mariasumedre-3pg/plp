@@ -1,17 +1,20 @@
-{% if question %}
-    <h1>Question: {{ question.question_text }}</h1>
+{% if poll %}
+    <h1>Poll: {{ poll.name }}</h1>
     {% if error_message %}
         <p><strong> {{ error_message }}</strong></p>
     {% endif %}
-    <form action="{% url 'polls:vote' question.pk %}" method="post">
+    <form action="{% url 'polls:vote' poll.pk %}" method="post">
         {% csrf_token %}
-        {% for choice in question.choice_set.all %}
-            <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.pk }}"/>
-            <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br/>
+        {% for question in poll.questions.all %}
+            <h2>Question: {{ question.question_text }}</h2>
+            {% for choice in question.choice_set.all %}
+                <input type="radio" name="{{ question.question_text }}" id="choice{{ forloop.counter }}" value="{{ choice.pk }}"/>
+                <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br/>
+            {% endfor %}
         {% endfor %}
     <input type="submit" value="Vote" />
     </form>
-    <p>Check <a href="{% url 'polls:results' question.pk %}">results</a></p>
+    <p>Check <a href="{% url 'polls:results' poll.pk %}">results</a></p>
 {% else %}
     <p>This question doesn't exist!</p>
 {% endif %}
