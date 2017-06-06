@@ -21,6 +21,9 @@ class Question(models.Model):
         ' return whether the question was published less than a day ago '
         now = timezone.now()
         return now >= self.pub_date >= now - datetime.timedelta(days=1)
+    was_published_recently.admin_order_field = 'pub_date'
+    was_published_recently.boolean = True
+    was_published_recently.short_description = 'Published recently?'
 
 
 class Choice(models.Model):
@@ -53,13 +56,10 @@ class Poll(models.Model):
         today = timezone.now()
         self.slug = self.slug or text.slugify(self.name + today.strftime('-%d-%B-%Y'))
 
-    @models.permalink
-    def get_absolute_url(self):
-        ' something url '
-        #equivalent to
-        # from django.urls import reverse
-        # return reverse('polls:poll', args=[str(self.slug)])
-        return 'polls:poll', (self.slug,)
+    def get_questions(self):
+        ' helper method to not display future questions '
+        return self.questions.filter(pub_date__lte=timezone.now()
+            ).order_by('-pub_date')[:5]
 
     def __unicode__(self):
         return self.name

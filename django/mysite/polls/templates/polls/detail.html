@@ -5,7 +5,7 @@
     {% endif %}
     <form action="{% url 'polls:vote' poll.pk %}" method="post">
         {% csrf_token %}
-        {% for question in poll.questions.all %}
+        {% for question in poll.get_questions %}
             <h2>Question: {{ question.question_text }}</h2>
             {% for choice in question.choice_set.all %}
                 <input type="radio" name="{{ question.question_text }}" id="choice{{ forloop.counter }}" value="{{ choice.pk }}"/>
