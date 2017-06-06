@@ -3,13 +3,17 @@ from __future__ import unicode_literals
 import datetime
 
 from django.test import TestCase
+from django.test import Client
 from django.utils import timezone
 from django.urls import reverse
 
-from .models import Question
+# import pytest
+
+from .models import Question, Poll
 
 # Create your tests here.
 class QuestionMethodTests(TestCase):
+    """ class to test the question model """
 
     def test_was_published_recently_with_future_question(self):
         """
@@ -49,6 +53,17 @@ def create_question(question_text, days):
     return Question.objects.create(question_text=question_text, pub_date=time)
 
 class QuestionViewTests(TestCase):
+    """ test for the questions view -> actually poll view now """
+    urls = 'mysite.polls.urls'
+    fixtures = []
+
+    def setUp(self):
+        """ make a new Client """
+        # Every test needs a client.
+        self.client = Client()
+        for poll in Poll.objects.all():
+            poll.delete()
+
     def test_index_with_no_questions(self):
         """
         If no questiones exist, an appropriate message should be displayed.
@@ -56,17 +71,21 @@ class QuestionViewTests(TestCase):
         response = self.client.get(reverse('polls:index'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "No polls are available.")
-        self.assertQuerysetEqual(response.context['latest_questions'], [])
+        self.assertQuerysetEqual(response.context['latest_polls'], [])
 
     def test_index_with_a_past_question(self):
         """
         If there is a question in the far past, then that question shall be displayed.
         """
         question = create_question("Test an old question?", -3)
-        response = self.client.get(reverse('polls:index'))
+        poll = Poll.objects.create(name="Test past question")
+        poll.questions.add(question)
+        poll.clean()
+        poll.save()
+        response = self.client.get(reverse('polls:detail', args=(poll.slug,)))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Test an old question?")
-        self.assertQuerysetEqual(response.context['latest_questions'], [repr(question)])
+        self.assertEqual(response.context['poll'], poll)
 
     def test_index_with_a_future_question(self):
         """
@@ -77,7 +96,7 @@ class QuestionViewTests(TestCase):
         response = self.client.get(reverse('polls:index'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "No polls are available.")
-        self.assertQuerysetEqual(response.context['latest_questions'], [])
+        self.assertQuerysetEqual(response.context['latest_polls'], [])
 
     def test_index_with_future_question_and_past_question(self):
         """
@@ -85,15 +104,17 @@ class QuestionViewTests(TestCase):
         should be displayed
         """
         question = create_question(question_text="Past question.", days=-30)
-        create_question(question_text="Future question.", days=30)
-        response = self.client.get(reverse('polls:index'))
+        question2 = create_question(question_text="Future question.", days=30)
+        poll = Poll.objects.create(name="Test past question")
+        poll.questions.add(question)
+        poll.questions.add(question2)
+        poll.clean()
+        poll.save()
+        response = self.client.get(reverse('polls:detail', args=(poll.slug,)))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Past question.")
         self.assertNotContains(response, "Future question.")
-        self.assertQuerysetEqual(
-            response.context['latest_questions'],
-            [repr(question)]
-        )
+        self.assertEqual(response.context['poll'], poll)
 
     def test_index_with_two_past_questions(self):
         """
@@ -101,9 +122,53 @@ class QuestionViewTests(TestCase):
         """
         question1 = create_question(question_text="Past question 1.", days=-5)
         question2 = create_question(question_text="Past question 2.", days=-7)
-        response = self.client.get(reverse('polls:index'))
+        poll = Poll.objects.create(name="Test past question")
+        poll.questions.add(question1)
+        poll.questions.add(question2)
+        poll.clean()
+        poll.save()
+        response = self.client.get(reverse('polls:detail', args=(poll.slug,)))
         self.assertEqual(response.status_code, 200)
-        self.assertQuerysetEqual(
-            response.context['latest_questions'],
-            [repr(question1), repr(question2)]
-        )
+        self.assertContains(response, "Past question 1.")
+        self.assertContains(response, "Past question 2.")
+        self.assertEqual(response.context['poll'], poll)
+
+
+class QuestionIndexDetailTests(TestCase):
+    urls = 'mysite.polls.urls'
+
+    def setUp(self):
+        """ make a new Client """
+        # Every test needs a client.
+        self.client = Client()
+        for poll in Poll.objects.all():
+            poll.delete()
+
+    def test_detail_view_with_a_future_question(self):
+        """
+        The detail view of a poll with a pub_date in the future should
+        return a 200 but without the future question
+        """
+        future_question = create_question(question_text='Future question.', days=4)
+        poll = Poll.objects.create(name="Test future question")
+        poll.questions.add(future_question)
+        poll.clean()
+        poll.save()
+        url = reverse('polls:detail', args=(poll.slug,))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Future question.")
+
+    def test_detail_view_with_a_past_question(self):
+        """
+        The detail view of a question with a pub_date in the past should
+        display a question's test.
+        """
+        past_question = create_question(question_text='Past Question.', days=-2)
+        poll = Poll.objects.create(name="Test past question")
+        poll.questions.add(past_question)
+        poll.clean()
+        poll.save()
+        url = reverse('polls:detail', args=(poll.slug,))
+        response = self.client.get(url)
+        self.assertContains(response, past_question.question_text)
