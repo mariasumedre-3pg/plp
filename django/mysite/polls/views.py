@@ -22,6 +22,7 @@ class IndexView(generic.ListView):
     context_object_name = 'latest_polls'
 
     def get_queryset(self):
+        'returns all polls'
         return Poll.objects.all()
 
     # def get_queryset(self):

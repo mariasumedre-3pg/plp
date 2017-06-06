@@ -1,5 +1,7 @@
-<p>Latest Polls:</p>
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'polls/style.css' %}" />
 {% if latest_polls %}
+    <p>Latest Polls:</p>
     <ul>
     {% for poll in latest_polls %}
         <li><a href="{% url 'polls:detail' poll.slug %}">{{ poll.name }}</a></li>

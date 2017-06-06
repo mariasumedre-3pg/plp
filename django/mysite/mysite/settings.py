@@ -26,7 +26,7 @@ SECRET_KEY = '-3(nwd@pn3%l6^a*6!xle0cqlvfi=g&%%4y3sg77hdf(0_kh@k'
 #DEBUG = False
 DEBUG = True
 
-#ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+#ALLOWED_HOSTS = ["127.0.0.1", "localhost", u'testserver',]
 ALLOWED_HOSTS = []
 
 
@@ -57,7 +57,7 @@ ROOT_URLCONF = 'mysite.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -115,8 +115,6 @@ USE_TZ = True
 USE_I18N = True
 
 USE_L10N = True
-
-USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
