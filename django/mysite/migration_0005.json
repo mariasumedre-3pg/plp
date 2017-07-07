@@ -1,0 +1,638 @@
+[
+    {
+        "model": "polls.question",
+        "pk": 1,
+        "fields": {
+            "question_text": "What's new?",
+                "pub_date": "2017-05-29T07:37:51Z"
+        }
+    },
+    {
+        "model": "polls.question",
+        "pk": 2,
+        "fields": {
+            "question_text": "What's up?",
+                "pub_date": "2017-05-29T08:48:05Z"
+        }
+    },
+    {
+        "model": "polls.question",
+        "pk": 4,
+        "fields": {
+            "question_text": "What is your favorite color?",
+                "pub_date": "2017-05-30T08:51:29.915Z"
+        }
+    },
+    {
+        "model": "polls.question",
+        "pk": 5,
+        "fields": {
+            "question_text": "What is your timezone?",
+                "pub_date": "2017-05-30T08:51:29.926Z"
+        }
+    },
+    {
+        "model": "polls.question",
+        "pk": 94,
+        "fields": {
+            "question_text": "What is your favorite work day?",
+                "pub_date": "2017-05-31T11:59:26Z"
+        }
+    },
+    {
+        "model": "polls.question",
+        "pk": 119,
+        "fields": {
+            "question_text": "Where do you work?",
+                "pub_date": "2017-06-06T11:17:52.645Z"
+        }
+    },
+    {
+        "model": "polls.question",
+        "pk": 120,
+        "fields": {
+            "question_text": "What is your address?",
+                "pub_date": "2017-06-06T11:17:52.653Z"
+        }
+    },
+    {
+        "model": "polls.question",
+        "pk": 121,
+        "fields": {
+            "question_text": "What is your job?",
+                "pub_date": "2017-06-06T11:17:52.662Z"
+        }
+    },
+    {
+        "model": "polls.question",
+        "pk": 122,
+        "fields": {
+            "question_text": "What is your name?",
+                "pub_date": "2017-06-06T11:17:52.665Z"
+        }
+    },
+    {
+        "model": "polls.question",
+        "pk": 123,
+        "fields": {
+            "question_text": "When is your birthday?",
+            "pub_date": "2017-06-06T11:17:52.675Z"
+        }
+    },
+    {
+        "model": "polls.question",
+        "pk": 124,
+        "fields": {
+            "question_text": "What is your best quality?",
+            "pub_date": "2017-06-06T11:17:52.678Z"
+        }
+    },
+    {
+        "model": "polls.question",
+        "pk": 125,
+        "fields": {
+            "question_text": "Where are you from?",
+            "pub_date": "2017-06-06T11:17:52.681Z"
+        }
+    },
+    {
+        "model": "polls.question",
+        "pk": 126,
+        "fields": {
+            "question_text": "What is your phone number?",
+            "pub_date": "2017-06-06T11:17:52.683Z"
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 1,
+        "fields": {
+            "question": 1,
+            "choice_text": "Not much",
+            "votes": 5
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 2,
+        "fields": {
+            "question": 1,
+            "choice_text": "The sky",
+            "votes": 3
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 4,
+        "fields": {
+            "question": 2,
+            "choice_text": "Not much, watching a game, drinking a beer",
+            "votes": 5
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 5,
+        "fields": {
+            "question": 4,
+            "choice_text": "DarkGoldenRod",
+            "votes": 1
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 6,
+        "fields": {
+            "question": 4,
+            "choice_text": "MediumSpringGreen",
+            "votes": 2
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 7,
+        "fields": {
+            "question": 4,
+            "choice_text": "LightSlateGray",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 8,
+        "fields": {
+            "question": 4,
+            "choice_text": "LightYellow",
+            "votes": 4
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 9,
+        "fields": {
+            "question": 4,
+            "choice_text": "LightBlue",
+            "votes": 1
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 10,
+        "fields": {
+            "question": 5,
+            "choice_text": "Atlantic/Cape_Verde",
+            "votes": 3
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 11,
+        "fields": {
+            "question": 5,
+            "choice_text": "Asia/Muscat",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 12,
+        "fields": {
+            "question": 5,
+            "choice_text": "Asia/Brunei",
+            "votes": 4
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 13,
+        "fields": {
+            "question": 5,
+            "choice_text": "Asia/Aden",
+            "votes": 2
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 14,
+        "fields": {
+            "question": 5,
+            "choice_text": "Pacific/Efate",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 447,
+        "fields": {
+            "question": 94,
+            "choice_text": "Monday",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 448,
+        "fields": {
+            "question": 94,
+            "choice_text": "Friday",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 449,
+        "fields": {
+            "question": 94,
+            "choice_text": "Tuesday",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 570,
+        "fields": {
+            "question": 119,
+            "choice_text": "Hill Group",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 571,
+        "fields": {
+            "question": 119,
+            "choice_text": "Cox Inc",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 572,
+        "fields": {
+            "question": 119,
+            "choice_text": "Snyder, Thompson and Gay",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 573,
+        "fields": {
+            "question": 119,
+            "choice_text": "Howard PLC",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 574,
+        "fields": {
+            "question": 119,
+            "choice_text": "Cruz LLC",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 575,
+        "fields": {
+            "question": 120,
+            "choice_text": "10723 Davis Isle Apt. 697\nBrandonmouth, MN 21777-4277",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 576,
+        "fields": {
+            "question": 120,
+            "choice_text": "5217 Walton Shores Suite 308\nWest Tracyborough, KY 69004",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 577,
+        "fields": {
+            "question": 120,
+            "choice_text": "205 Watson Curve Apt. 295\nNew Nathan, MP 54312-5955",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 578,
+        "fields": {
+            "question": 120,
+            "choice_text": "734 Ferrell Key\nScottbury, MP 08381-6002",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 579,
+        "fields": {
+            "question": 120,
+            "choice_text": "PSC 5861, Box 4969\nAPO AE 02799-2427",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 580,
+        "fields": {
+            "question": 121,
+            "choice_text": "Proofreader",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 581,
+        "fields": {
+            "question": 121,
+            "choice_text": "Accounting technician",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 582,
+        "fields": {
+            "question": 121,
+            "choice_text": "Social research officer, government",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 583,
+        "fields": {
+            "question": 121,
+            "choice_text": "Armed forces technical officer",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 584,
+        "fields": {
+            "question": 121,
+            "choice_text": "Therapist, horticultural",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 585,
+        "fields": {
+            "question": 122,
+            "choice_text": "Duane Lee",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 586,
+        "fields": {
+            "question": 122,
+            "choice_text": "Maureen Curry",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 587,
+        "fields": {
+            "question": 122,
+            "choice_text": "Carolyn Evans",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 588,
+        "fields": {
+            "question": 122,
+            "choice_text": "Nicole Acosta",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 589,
+        "fields": {
+            "question": 122,
+            "choice_text": "Annette Miller",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 590,
+        "fields": {
+            "question": 123,
+            "choice_text": "1982-06-11",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 591,
+        "fields": {
+            "question": 123,
+            "choice_text": "1974-08-12",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 592,
+        "fields": {
+            "question": 123,
+            "choice_text": "1979-07-01",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 593,
+        "fields": {
+            "question": 123,
+            "choice_text": "1990-04-26",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 594,
+        "fields": {
+            "question": 123,
+            "choice_text": "1992-03-20",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 595,
+        "fields": {
+            "question": 124,
+            "choice_text": "Team-oriented multi-state access",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 596,
+        "fields": {
+            "question": 124,
+            "choice_text": "Innovative tangible benchmark",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 597,
+        "fields": {
+            "question": 124,
+            "choice_text": "Optional asymmetric time-frame",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 598,
+        "fields": {
+            "question": 124,
+            "choice_text": "Sharable client-server adapter",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 599,
+        "fields": {
+            "question": 124,
+            "choice_text": "Phased multi-tasking installation",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 600,
+        "fields": {
+            "question": 125,
+            "choice_text": "Togo",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 601,
+        "fields": {
+            "question": 125,
+            "choice_text": "Antigua and Barbuda",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 602,
+        "fields": {
+            "question": 125,
+            "choice_text": "France",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 603,
+        "fields": {
+            "question": 125,
+            "choice_text": "Cambodia",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 604,
+        "fields": {
+            "question": 125,
+            "choice_text": "American Samoa",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 605,
+        "fields": {
+            "question": 126,
+            "choice_text": "1-415-886-9379x5795",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 606,
+        "fields": {
+            "question": 126,
+            "choice_text": "(926)353-6936",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 607,
+        "fields": {
+            "question": 126,
+            "choice_text": "818-126-6600x7453",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 608,
+        "fields": {
+            "question": 126,
+            "choice_text": "+73(3)8544414773",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.choice",
+        "pk": 609,
+        "fields": {
+            "question": 126,
+            "choice_text": "(286)587-2261x8531",
+            "votes": 0
+        }
+    },
+    {
+        "model": "polls.poll",
+        "pk": 44,
+        "fields": {
+            "name": "Workforce Poll",
+            "slug": "workforce-poll-06-june-2017",
+            "questions": [
+                119,
+                120,
+                121,
+                122
+            ]
+        }
+    },
+    {
+        "model": "polls.poll",
+        "pk": 45,
+        "fields": {
+            "name": "Random Poll",
+            "slug": "random-poll-06-june-2017",
+            "questions": [
+                123,
+                124,
+                125,
+                126
+            ]
+        }
+    }
+]
