@@ -3,5 +3,6 @@ li a {
 }
 
 body {
-    background: white url("https://i.giphy.com/hcrfSTtvl93cA.gif") no-repeat right bottom;
+    /*background: white url("https://i.giphy.com/hcrfSTtvl93cA.gif") no-repeat right bottom;*/
+    background: white url("images/background.gif") no-repeat right top;
 }
